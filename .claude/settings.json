@@ -137,16 +137,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "git add -A && git diff --cached --quiet || git commit -m \"claude: auto-save $(date +%H:%M:%S)\" --no-verify 2>/dev/null\necho '{\"feedback\": \"Auto-committed changes.\", \"suppressOutput\": true}'",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
             "command": "if [[ \"$CLAUDE_TOOL_INPUT_FILE_PATH\" =~ (components|pages|app)/.*\\.(tsx|jsx|css)$ ]]; then\n  if command -v screencapture &>/dev/null; then\n    mkdir -p \"${CLAUDE_PROJECT_DIR:-.}/.claude/screenshots\"\n    screencapture -x -T 1 \"${CLAUDE_PROJECT_DIR:-.}/.claude/screenshots/ui-$(date +%s).png\" 2>/dev/null\n    echo '{\"feedback\": \"UI screenshot captured.\", \"suppressOutput\": true}'\n  fi\nfi",
             "timeout": 10,
             "async": true
