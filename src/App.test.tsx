@@ -1,9 +1,11 @@
 import { render, screen } from '@testing-library/react'
-import App from './App'
+import { createMemoryRouter, RouterProvider } from 'react-router-dom'
+import { routes } from './router'
 
-describe('App', () => {
-  it('renders heading', () => {
-    render(<App />)
-    expect(screen.getByRole('heading', { name: /smart form builder/i })).toBeInTheDocument()
+describe('App routing', () => {
+  it('renders home page at /', async () => {
+    const router = createMemoryRouter(routes, { initialEntries: ['/'] })
+    render(<RouterProvider router={router} />)
+    expect(await screen.findByRole('heading', { name: /smart form builder/i })).toBeInTheDocument()
   })
 })
