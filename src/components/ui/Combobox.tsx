@@ -1,24 +1,35 @@
-import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, useId, type KeyboardEvent } from 'react';
 import { cn } from '../../utils/cn';
 
-interface ComboboxProps {
-  options: string[];
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
+export interface ComboboxOption {
+  id: string;
+  label: string;
 }
 
-export function Combobox({ options, value, onChange, placeholder }: ComboboxProps) {
-  const [query, setQuery] = useState(value);
+interface ComboboxProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: ComboboxOption[];
+  placeholder?: string;
+  className?: string;
+}
+
+export function Combobox({ value, onChange, options, placeholder, className }: ComboboxProps) {
+  const selected = options.find((o) => o.id === value);
+  const [query, setQuery] = useState(selected?.label ?? '');
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
 
   const filtered = query
-    ? options.filter((o) => o.toLowerCase().includes(query.toLowerCase()))
+    ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()))
     : options;
 
-  useEffect(() => { setQuery(value); }, [value]);
+  useEffect(() => {
+    const label = options.find((o) => o.id === value)?.label ?? '';
+    setQuery(label);
+  }, [value, options]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -36,8 +47,9 @@ export function Combobox({ options, value, onChange, placeholder }: ComboboxProp
       e.preventDefault();
       setActiveIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === 'Enter' && activeIndex >= 0 && filtered[activeIndex]) {
-      onChange(filtered[activeIndex]);
-      setQuery(filtered[activeIndex]);
+      const opt = filtered[activeIndex];
+      onChange(opt.id);
+      setQuery(opt.label);
       setOpen(false);
     } else if (e.key === 'Escape') {
       setOpen(false);
@@ -45,7 +57,7 @@ export function Combobox({ options, value, onChange, placeholder }: ComboboxProp
   }
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className={cn('relative', className)}>
       <input
         className="input"
         value={query}
@@ -56,15 +68,19 @@ export function Combobox({ options, value, onChange, placeholder }: ComboboxProp
         role="combobox"
         aria-expanded={open}
         aria-autocomplete="list"
+        aria-controls={listboxId}
+        aria-activedescendant={activeIndex >= 0 && filtered[activeIndex] ? `${listboxId}-opt-${filtered[activeIndex].id}` : undefined}
       />
       {open && filtered.length > 0 && (
         <div
+          id={listboxId}
           role="listbox"
           className="absolute top-full mt-1 left-0 right-0 bg-surface border border-border rounded-md shadow-popover p-1.5 z-10 max-h-55 overflow-y-auto"
         >
           {filtered.map((opt, i) => (
             <div
-              key={opt}
+              key={opt.id}
+              id={`${listboxId}-opt-${opt.id}`}
               role="option"
               aria-selected={i === activeIndex}
               className={cn(
@@ -74,12 +90,12 @@ export function Combobox({ options, value, onChange, placeholder }: ComboboxProp
               onMouseEnter={() => setActiveIndex(i)}
               onMouseDown={(e) => {
                 e.preventDefault();
-                onChange(opt);
-                setQuery(opt);
+                onChange(opt.id);
+                setQuery(opt.label);
                 setOpen(false);
               }}
             >
-              {opt}
+              {opt.label}
             </div>
           ))}
         </div>
