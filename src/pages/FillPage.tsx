@@ -95,7 +95,7 @@ function FillPageInner() {
     <div className="min-h-screen flex flex-col">
       <header className="h-14 border-b border-border topbar-glass sticky top-0 z-40 flex items-center px-5">
         <div className="flex items-center gap-3 w-full max-w-app mx-auto">
-          <Brand />
+          <Brand noLink />
           <div className="flex-1" />
           <Button variant="ghost" size="sm" onClick={handlePrint}>{ICON_DOWNLOAD} Save PDF</Button>
         </div>

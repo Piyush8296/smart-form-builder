@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Brand } from '../components/ui/Brand';
 import { Button } from '../components/ui/Button';
 import { useStorage } from '../hooks/useStorage';
+import { useSession } from '../contexts/SessionContext';
+import { isOwner } from '../storage/accessStore';
 import type { InstanceSummary } from '../types/instance';
 
 const ICON_SEARCH = (
@@ -25,9 +27,15 @@ export default function InstancesPage() {
   const { id: templateId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { loadTemplate, loadInstances, removeInstance, error } = useStorage();
+  const { session } = useSession();
   const [search, setSearch] = useState('');
 
   if (!templateId) { navigate('/'); return null; }
+
+  if (!isOwner(session!.userId, templateId)) {
+    navigate('/');
+    return null;
+  }
 
   const template = loadTemplate(templateId);
   const allInstances: InstanceSummary[] = loadInstances(templateId);

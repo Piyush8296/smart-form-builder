@@ -4,6 +4,7 @@ import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { Brand } from '../components/ui/Brand';
 import { Button } from '../components/ui/Button';
 import { useTemplateList } from '../hooks/useTemplateList';
+import { useSession } from '../contexts/SessionContext';
 import type { TemplateSummary } from '../types/template';
 
 const ICON_SEARCH = (
@@ -109,6 +110,7 @@ function NewFormCard({ onClick }: { onClick: () => void }) {
 export default function Home() {
   const navigate = useNavigate();
   const { templates, error, removeTemplate } = useTemplateList();
+  const { session, logout } = useSession();
   const [search, setSearch] = useState('');
   const [colCount, setColCount] = useState(getColCount);
 
@@ -166,6 +168,15 @@ export default function Home() {
           <Button variant="primary" className="hidden mob:inline-flex" onClick={handleNew}>
             {ICON_PLUS} New form
           </Button>
+          <div className="hidden mob:flex items-center gap-2 pl-2 border-l border-border ml-1">
+            <span className="text-ui text-muted truncate max-w-32">{session?.displayName}</span>
+            <button
+              className="px-2.5 py-1.5 rounded-md text-ui text-muted hover:bg-surface-2 hover:text-ink transition-colors"
+              onClick={logout}
+            >
+              Sign out
+            </button>
+          </div>
           <button className="flex mob:hidden px-2.5 py-1.5 rounded-md text-muted hover:bg-surface-2 transition-colors" aria-label="menu">{ICON_MENU}</button>
         </div>
       </header>
