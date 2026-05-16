@@ -30,7 +30,7 @@ export function BuilderToolbar({ title, isDirty, onTitleChange, onSettings, onPr
         <Brand nameHidden />
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <Input
-            className="bg-transparent border border-transparent rounded-md py-1 px-2 w-full max-w-[360px] text-sm font-medium tracking-snug-xs hover:bg-surface-2 focus:bg-surface focus:border-border"
+            className="bg-transparent border border-transparent rounded-md py-1 px-2 w-full max-w-form-title text-sm font-medium tracking-snug-xs hover:bg-surface-2 focus:bg-surface focus:border-border"
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
             placeholder="Untitled form"

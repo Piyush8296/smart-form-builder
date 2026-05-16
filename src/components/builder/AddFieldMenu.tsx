@@ -6,6 +6,7 @@ interface AddFieldMenuProps {
 }
 
 function parseIcon(svg: string) {
+  // SAFETY: svg strings come from internal registry plugin constants, never from user input.
   return <span dangerouslySetInnerHTML={{ __html: svg }} className="contents" />;
 }
 
@@ -20,12 +21,14 @@ export function AddFieldMenu({ onAdd }: AddFieldMenuProps) {
     }, new Map<string, typeof plugins>()),
   );
 
-  const groupLabel = (g: string) =>
-    g === 'input' ? 'Input' : g === 'choice' ? 'Choice' : g === 'special' ? 'Special' : g;
+  const groupLabel = (g: string) => {
+    const labels: Record<string, string> = { input: 'Input', choice: 'Choice', special: 'Special', select: 'Select', display: 'Display' };
+    return labels[g] ?? g;
+  };
 
   return (
     <>
-      <div className="sticky top-0 bg-inherit px-4 py-3.5 pb-2.5 border-b border-divider z-[var(--z-lifted)]">
+      <div className="sticky top-0 bg-inherit px-4 py-3.5 pb-2.5 border-b border-divider z-lifted">
         <h3 className="text-caption font-semibold uppercase tracking-wider text-muted m-0">Add field</h3>
       </div>
       <div className="px-3.5 py-3.5 pb-10">

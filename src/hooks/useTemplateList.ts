@@ -8,6 +8,7 @@ import { DEFAULT_TEMPLATE_SETTINGS } from '../types/template';
 
 export function useTemplateList() {
   const { session } = useSession();
+  // SAFETY: This hook is only called inside components wrapped by AuthGuard, which guarantees session is non-null.
   const userId = session!.userId;
 
   const [templates, setTemplates] = useState<TemplateSummary[]>(() => getOwnedSummaries(userId));

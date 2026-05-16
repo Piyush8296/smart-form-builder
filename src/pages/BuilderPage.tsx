@@ -147,7 +147,7 @@ export default function BuilderPage() {
 
   if (isNew) return null;
 
-  // Ownership check — non-owners get redirected to fill mode
+  // SAFETY: session is non-null (AuthGuard); id is defined and non-'new' (isNew guard above returns early).
   if (!isOwner(session!.userId, id!)) {
     navigate(`/fill/${id}`, { replace: true });
     return null;

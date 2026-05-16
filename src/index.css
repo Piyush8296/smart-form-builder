@@ -43,7 +43,7 @@
   --max-w-app: 80rem;        /* 1280px – main app container */
   --max-w-content: 45rem;    /* 720px  – form/fill content */
   --max-w-modal: 32.5rem;    /* 520px  – dialog max-width */
-  --max-w-form-title: 20rem; /* 320px  – builder title input */
+  --max-w-form-title: 22.5rem; /* 360px  – builder title input */
 
   /* Transitions */
   --duration-control: 120ms;
@@ -165,6 +165,14 @@
   transition-property: border-color, transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+@utility grid-response-cols {
+  grid-template-columns: 1fr 2fr auto;
+}
+
+@utility shadow-focus-accent {
+  box-shadow: 0 0 0 2px var(--color-accent);
 }
 
 @layer components {

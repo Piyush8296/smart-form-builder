@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 
 interface ModalProps {
   open: boolean;
@@ -12,6 +12,7 @@ const FOCUSABLE = 'button, input, select, textarea, a[href], [tabindex]:not([tab
 
 export function Modal({ open, onClose, title, children, footer }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     if (!open) return;
@@ -46,10 +47,10 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         className="bg-surface rounded-xl w-full max-w-modal max-h-modal overflow-y-auto shadow-dialog"
         role="dialog"
         aria-modal
-        aria-labelledby="modal-title"
+        aria-labelledby={titleId}
       >
         <div className="flex justify-between items-center px-card py-section border-b border-divider">
-          <h2 id="modal-title" className="m-0 text-dialog font-semibold tracking-snug-xs">{title}</h2>
+          <h2 id={titleId} className="m-0 text-dialog font-semibold tracking-snug-xs">{title}</h2>
           <button
             className="inline-flex items-center justify-center w-7.5 h-7 rounded text-ink-2 hover:bg-surface-2 hover:text-ink"
             onClick={onClose}

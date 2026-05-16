@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { Brand } from '../components/ui/Brand';
 import { Button } from '../components/ui/Button';
+import { Modal } from '../components/ui/Modal';
 import { useTemplateList } from '../hooks/useTemplateList';
 import { useSession } from '../contexts/SessionContext';
 import type { TemplateSummary } from '../types/template';
@@ -113,6 +114,7 @@ export default function Home() {
   const { session, logout } = useSession();
   const [search, setSearch] = useState('');
   const [colCount, setColCount] = useState(getColCount);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     function update() { setColCount(getColCount()); }
@@ -142,18 +144,20 @@ export default function Home() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  /* eslint-disable react-hooks/refs */
   const rowVirtualizer = useWindowVirtualizer({
     count: rows.length,
     estimateSize: () => ROW_HEIGHT,
     overscan: 4,
     scrollMargin: containerRef.current?.offsetTop ?? 0,
   });
+  /* eslint-enable react-hooks/refs */
 
   function handleNew() { navigate('/builder/new'); }
 
   function handleDelete(e: React.MouseEvent, id: string) {
     e.stopPropagation();
-    if (confirm('Delete this form and all its responses?')) removeTemplate(id);
+    setDeleteId(id);
   }
 
   return (
@@ -254,6 +258,20 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      <Modal
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        title="Delete form"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancel</Button>
+            <Button variant="danger-ghost" onClick={() => { if (deleteId) removeTemplate(deleteId); setDeleteId(null); }}>Delete</Button>
+          </>
+        }
+      >
+        <p className="text-ui text-muted m-0">Delete this form and all its responses? This cannot be undone.</p>
+      </Modal>
     </div>
   );
 }

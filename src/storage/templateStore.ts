@@ -42,7 +42,7 @@ export function saveTemplate(t: Template): void {
     localStorage.setItem(TEMPLATES_KEY, JSON.stringify(summaries));
   } catch (e) {
     if (e instanceof DOMException && e.name === 'QuotaExceededError') {
-      throw new Error('Storage quota exceeded. Please delete some templates to free up space.');
+      throw new Error('Storage quota exceeded. Please delete some templates to free up space.', { cause: e });
     }
     throw e;
   }
