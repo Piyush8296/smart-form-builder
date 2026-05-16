@@ -96,8 +96,8 @@ export const singleSelectPlugin: FieldPlugin<SingleSelectConfig> = {
       ? [...fisherYates(config.options), ...(config.allowOther ? [{ id: OTHER_OPTION_ID, label: 'Other' }] : [])]
       : [...config.options, ...(config.allowOther ? [{ id: OTHER_OPTION_ID, label: 'Other' }] : [])];
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const shuffledRef = useRef(displayOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { shuffledRef.current = displayOptions; }, []); // only shuffle on mount
 
     if (config.variant === 'dropdown') {

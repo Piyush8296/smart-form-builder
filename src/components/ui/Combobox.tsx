@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, useId, type KeyboardEvent } from 'react';
 import { cn } from '../../utils/cn';
 
 export interface ComboboxOption {
@@ -20,6 +20,7 @@ export function Combobox({ value, onChange, options, placeholder, className }: C
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
 
   const filtered = query
     ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()))
@@ -67,15 +68,19 @@ export function Combobox({ value, onChange, options, placeholder, className }: C
         role="combobox"
         aria-expanded={open}
         aria-autocomplete="list"
+        aria-controls={listboxId}
+        aria-activedescendant={activeIndex >= 0 && filtered[activeIndex] ? `${listboxId}-opt-${filtered[activeIndex].id}` : undefined}
       />
       {open && filtered.length > 0 && (
         <div
+          id={listboxId}
           role="listbox"
           className="absolute top-full mt-1 left-0 right-0 bg-surface border border-border rounded-md shadow-popover p-1.5 z-10 max-h-55 overflow-y-auto"
         >
           {filtered.map((opt, i) => (
             <div
               key={opt.id}
+              id={`${listboxId}-opt-${opt.id}`}
               role="option"
               aria-selected={i === activeIndex}
               className={cn(

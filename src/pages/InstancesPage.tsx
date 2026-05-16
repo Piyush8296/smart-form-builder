@@ -2,17 +2,15 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Brand } from '../components/ui/Brand';
 import { Button } from '../components/ui/Button';
+import { Modal } from '../components/ui/Modal';
 import { useStorage } from '../hooks/useStorage';
+import { useSession } from '../contexts/SessionContext';
+import { isOwner } from '../storage/accessStore';
 import type { InstanceSummary } from '../types/instance';
 
 const ICON_SEARCH = (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
-  </svg>
-);
-const ICON_DOWNLOAD = (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M7 10l5 5 5-5" /><path d="M12 15V3" />
   </svg>
 );
 const ICON_MENU = (
@@ -25,9 +23,17 @@ export default function InstancesPage() {
   const { id: templateId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { loadTemplate, loadInstances, removeInstance, error } = useStorage();
+  const { session } = useSession();
   const [search, setSearch] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   if (!templateId) { navigate('/'); return null; }
+
+  // SAFETY: InstancesPage renders behind AuthGuard, which guarantees session is non-null.
+  if (!isOwner(session!.userId, templateId)) {
+    navigate('/');
+    return null;
+  }
 
   const template = loadTemplate(templateId);
   const allInstances: InstanceSummary[] = loadInstances(templateId);
@@ -108,27 +114,22 @@ export default function InstancesPage() {
             <div className="text-center py-16 text-muted">No responses yet.</div>
           ) : (
             <div className="w-full bg-surface border border-border rounded-lg overflow-hidden">
-              <div className="grid grid-cols-[1fr_2fr_auto] items-center px-section py-3.5 border-b border-divider text-ui bg-surface-2 font-mono text-label text-muted uppercase tracking-wide max-mob:hidden">
+              <div className="grid grid-response-cols items-center px-section py-3.5 border-b border-divider text-ui bg-surface-2 font-mono text-label text-muted uppercase tracking-wide max-mob:hidden">
                 <span>ID</span>
                 <span>Submitted</span>
                 <span className="text-right">Actions</span>
               </div>
               {filtered.map((inst) => (
-                <div key={inst.id} className="grid grid-cols-[1fr_2fr_auto] items-center px-section py-3.5 border-b border-divider text-ui last:border-b-0 max-mob:grid-cols-1 max-mob:gap-1">
+                <div key={inst.id} className="grid grid-response-cols items-center px-section py-3.5 border-b border-divider text-ui last:border-b-0 max-mob:grid-cols-1 max-mob:gap-1">
                   <span className="font-mono text-meta text-muted truncate">{inst.id}</span>
                   <span className="font-mono text-caption text-muted">
                     {new Date(inst.submittedAt).toLocaleString()}
                   </span>
                   <span className="flex gap-1 justify-end max-mob:justify-start max-mob:mt-1.5">
-                    <Button variant="ghost" size="sm" icon title="Download PDF" onClick={() => window.print()}>
-                      {ICON_DOWNLOAD}
-                    </Button>
                     <Button
                       variant="danger-ghost"
                       size="sm"
-                      onClick={() => {
-                        if (confirm('Delete this response?')) removeInstance(inst.id, templateId);
-                      }}
+                      onClick={() => setDeleteId(inst.id)}
                     >
                       Delete
                     </Button>
@@ -139,6 +140,20 @@ export default function InstancesPage() {
           )}
         </div>
       </main>
+
+      <Modal
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        title="Delete response"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancel</Button>
+            <Button variant="danger-ghost" onClick={() => { if (deleteId) removeInstance(deleteId, templateId); setDeleteId(null); }}>Delete</Button>
+          </>
+        }
+      >
+        <p className="text-ui text-muted m-0">Delete this response? This cannot be undone.</p>
+      </Modal>
     </div>
   );
 }

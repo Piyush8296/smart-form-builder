@@ -56,7 +56,7 @@ export function FieldListItem({ field, selected, onSelect, onDuplicate, onDelete
     <div
       ref={setNodeRef}
       style={style}
-      className="group/field bg-surface border border-border rounded-lg mb-2.5 relative transition-colors hover:border-border-strong data-[selected=true]:border-ink data-[selected=true]:shadow-[0_0_0_2px_var(--color-accent)] data-[hidden=true]:opacity-55"
+      className="group/field bg-surface border border-border rounded-lg mb-2.5 relative transition-colors hover:border-border-strong data-[selected=true]:border-ink data-[selected=true]:shadow-focus-accent data-[hidden=true]:opacity-55"
       data-selected={selected}
       data-hidden={isHidden || undefined}
       onClick={onSelect}

@@ -18,7 +18,7 @@ export function ConfigPanel({ field, allFields, onChange }: ConfigPanelProps) {
 
   return (
     <>
-      <div className="sticky top-0 bg-surface border-b border-divider z-[var(--z-lifted)]">
+      <div className="sticky top-0 bg-surface border-b border-divider z-lifted">
         <div className="flex border-b border-divider px-3 gap-1">
           {(['Field', 'Logic', 'Validation'] as Tab[]).map((t) => (
             <button

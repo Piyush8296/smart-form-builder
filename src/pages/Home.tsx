@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { Brand } from '../components/ui/Brand';
 import { Button } from '../components/ui/Button';
+import { Modal } from '../components/ui/Modal';
 import { useTemplateList } from '../hooks/useTemplateList';
+import { useSession } from '../contexts/SessionContext';
 import type { TemplateSummary } from '../types/template';
 
 const ICON_SEARCH = (
@@ -109,8 +111,10 @@ function NewFormCard({ onClick }: { onClick: () => void }) {
 export default function Home() {
   const navigate = useNavigate();
   const { templates, error, removeTemplate } = useTemplateList();
+  const { session, logout } = useSession();
   const [search, setSearch] = useState('');
   const [colCount, setColCount] = useState(getColCount);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     function update() { setColCount(getColCount()); }
@@ -140,18 +144,20 @@ export default function Home() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  /* eslint-disable react-hooks/refs */
   const rowVirtualizer = useWindowVirtualizer({
     count: rows.length,
     estimateSize: () => ROW_HEIGHT,
     overscan: 4,
     scrollMargin: containerRef.current?.offsetTop ?? 0,
   });
+  /* eslint-enable react-hooks/refs */
 
   function handleNew() { navigate('/builder/new'); }
 
   function handleDelete(e: React.MouseEvent, id: string) {
     e.stopPropagation();
-    if (confirm('Delete this form and all its responses?')) removeTemplate(id);
+    setDeleteId(id);
   }
 
   return (
@@ -166,6 +172,15 @@ export default function Home() {
           <Button variant="primary" className="hidden mob:inline-flex" onClick={handleNew}>
             {ICON_PLUS} New form
           </Button>
+          <div className="hidden mob:flex items-center gap-2 pl-2 border-l border-border ml-1">
+            <span className="text-ui text-muted truncate max-w-32">{session?.displayName}</span>
+            <button
+              className="px-2.5 py-1.5 rounded-md text-ui text-muted hover:bg-surface-2 hover:text-ink transition-colors"
+              onClick={logout}
+            >
+              Sign out
+            </button>
+          </div>
           <button className="flex mob:hidden px-2.5 py-1.5 rounded-md text-muted hover:bg-surface-2 transition-colors" aria-label="menu">{ICON_MENU}</button>
         </div>
       </header>
@@ -243,6 +258,20 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      <Modal
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        title="Delete form"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancel</Button>
+            <Button variant="danger-ghost" onClick={() => { if (deleteId) removeTemplate(deleteId); setDeleteId(null); }}>Delete</Button>
+          </>
+        }
+      >
+        <p className="text-ui text-muted m-0">Delete this form and all its responses? This cannot be undone.</p>
+      </Modal>
     </div>
   );
 }

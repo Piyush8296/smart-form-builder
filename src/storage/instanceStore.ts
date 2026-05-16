@@ -35,7 +35,7 @@ export function saveInstance(i: Instance): void {
     localStorage.setItem(instancesKey(i.templateId), JSON.stringify(summaries));
   } catch (e) {
     if (e instanceof DOMException && e.name === 'QuotaExceededError') {
-      throw new Error('Storage quota exceeded. Please export or delete some responses.');
+      throw new Error('Storage quota exceeded. Please export or delete some responses.', { cause: e });
     }
     throw e;
   }

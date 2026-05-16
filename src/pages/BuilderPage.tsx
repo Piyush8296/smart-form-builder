@@ -4,6 +4,8 @@ import { BuilderProvider } from '../contexts/BuilderContext';
 import { useBuilder } from '../hooks/useBuilder';
 import { useStorage } from '../hooks/useStorage';
 import { useTemplateList } from '../hooks/useTemplateList';
+import { useSession } from '../contexts/SessionContext';
+import { isOwner } from '../storage/accessStore';
 import { FieldList } from '../components/builder/FieldList';
 import { AddFieldMenu } from '../components/builder/AddFieldMenu';
 import { ConfigPanel } from '../components/builder/ConfigPanel';
@@ -129,6 +131,7 @@ export default function BuilderPage() {
   const navigate = useNavigate();
   const { loadTemplate } = useStorage();
   const { createTemplate } = useTemplateList();
+  const { session } = useSession();
 
   const isNew = !id || id === 'new';
   const hasCreated = useRef(false);
@@ -143,6 +146,12 @@ export default function BuilderPage() {
   }, []);
 
   if (isNew) return null;
+
+  // SAFETY: session is non-null (AuthGuard); id is defined and non-'new' (isNew guard above returns early).
+  if (!isOwner(session!.userId, id!)) {
+    navigate(`/fill/${id}`, { replace: true });
+    return null;
+  }
 
   const template = loadTemplate(id!);
   if (!template) {
