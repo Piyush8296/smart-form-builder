@@ -6,6 +6,6 @@ describe('App routing', () => {
   it('renders home page at /', async () => {
     const router = createMemoryRouter(routes, { initialEntries: ['/'] })
     render(<RouterProvider router={router} />)
-    expect(await screen.findByRole('heading', { name: /smart form builder/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /templates/i })).toBeInTheDocument()
   })
 })

@@ -22,7 +22,13 @@ paths:
 - Follow the class order convention: layout → sizing → spacing → typography → visual → state.
 - Extract repeated utility combinations into components, not `@apply` (preserves tree-shaking).
 - Use design tokens via `theme()` — no magic numbers for colors, spacing, or typography.
-- Custom values in `tailwind.config` — never arbitrary values (`[13px]`) unless truly one-off.
+- **Zero arbitrary bracket values** — no `[13px]`, `[calc(...)]`, `[var(...)]`, or any `[...]` syntax in className strings. Every value must be a named token or standard Tailwind utility.
+  - Sizes/spacing → decimal Tailwind units (`w-7.5`, `px-2.5`, `h-8.5`) or `--spacing-*` tokens in `@theme`
+  - Breakpoints → `--breakpoint-*` in `@theme` (e.g. `mob:`, `max-mob:`, `canvas:`)
+  - Transitions → `@utility transition-*` blocks in `index.css`
+  - Grid templates → `@utility grid-*` blocks in `index.css`
+  - One-off dimensions → `--max-w-*`, `--max-h-*`, `--leading-*` tokens in `@theme`; or `@utility` for truly structural values
+  - Dynamic values (progress bars, user-driven widths) → `style={{ width: value }}` inline prop
 - Dark mode via `dark:` variant — respect `prefers-color-scheme`.
 
 ## CSS Modules

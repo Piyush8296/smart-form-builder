@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: Monitors all other agents and produces a single unified project health report. Use when starting a coding session, before deploying, or when context-switching back to a project. Summarizes findings from code-reviewer, performance-auditor, accessibility-auditor, architecture-reviewer, doc-generator, and test-writer.
-model: opus
+model: sonnet
 tools: Read, Grep, Glob, Bash(git:*), Bash(npx:*), Bash(find:*)
 memory: project
 ---
