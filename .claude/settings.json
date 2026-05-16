@@ -48,7 +48,14 @@
       "WebFetch(domain:react.dev)",
       "WebFetch(domain:nextjs.org)",
       "WebFetch(domain:developer.mozilla.org)",
-      "WebSearch"
+      "WebSearch",
+      "mcp__codegraph__codegraph_search",
+      "mcp__codegraph__codegraph_context",
+      "mcp__codegraph__codegraph_callers",
+      "mcp__codegraph__codegraph_callees",
+      "mcp__codegraph__codegraph_impact",
+      "mcp__codegraph__codegraph_node",
+      "mcp__codegraph__codegraph_status"
     ],
     "deny": [],
     "ask": [
@@ -97,7 +104,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [[ \"$CLAUDE_TOOL_INPUT_FILE_PATH\" =~ \\.(ts|tsx|js|jsx)$ ]]; then\n  npx prettier --write \"$CLAUDE_TOOL_INPUT_FILE_PATH\" 2>/dev/null\n  if [ $? -eq 0 ]; then\n    echo '{\"feedback\": \"Formatted with Prettier.\", \"suppressOutput\": true}'\n  else\n    echo '{\"feedback\": \"Prettier formatting failed \u2014 check syntax.\"}' >&2\n  fi\nfi",
+            "command": "if [[ \"$CLAUDE_TOOL_INPUT_FILE_PATH\" =~ \\.(ts|tsx|js|jsx)$ ]]; then\n  npx prettier --write \"$CLAUDE_TOOL_INPUT_FILE_PATH\" 2>/dev/null\n  if [ $? -eq 0 ]; then\n    echo '{\"feedback\": \"Formatted with Prettier.\", \"suppressOutput\": true}'\n  else\n    echo '{\"feedback\": \"Prettier formatting failed — check syntax.\"}' >&2\n  fi\nfi",
             "timeout": 15
           }
         ]
@@ -117,7 +124,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [[ \"$CLAUDE_TOOL_INPUT_FILE_PATH\" =~ \\.test\\.(ts|tsx|js|jsx)$ ]]; then\n  echo '{\"feedback\": \"Running related tests...\"}' >&2\n  npx vitest run \"$CLAUDE_TOOL_INPUT_FILE_PATH\" --reporter=verbose 2>&1 | tail -25\n  if [ ${PIPESTATUS[0]} -eq 0 ]; then\n    echo '{\"feedback\": \"Tests passed.\"}'\n  else\n    echo '{\"feedback\": \"Tests failed \u2014 see output above.\"}' >&2\n  fi\nfi",
+            "command": "if [[ \"$CLAUDE_TOOL_INPUT_FILE_PATH\" =~ \\.test\\.(ts|tsx|js|jsx)$ ]]; then\n  echo '{\"feedback\": \"Running related tests...\"}' >&2\n  npx vitest run \"$CLAUDE_TOOL_INPUT_FILE_PATH\" --reporter=verbose 2>&1 | tail -25\n  if [ ${PIPESTATUS[0]} -eq 0 ]; then\n    echo '{\"feedback\": \"Tests passed.\"}'\n  else\n    echo '{\"feedback\": \"Tests failed — see output above.\"}' >&2\n  fi\nfi",
             "timeout": 60
           }
         ]
