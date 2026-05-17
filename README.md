@@ -66,8 +66,32 @@ src/
 
 ### Adding an 11th field type
 
+Use the `/add-field` slash command in Claude Code to scaffold all boilerplate automatically:
+
+```
+/add-field <field-name> [group] ["display name"]
+```
+
+Examples:
+```
+/add-field color-picker
+/add-field color-picker select "Pick a Color"
+/add-field section-divider display
+```
+
+Groups: `input` (default) · `select` · `display` · `special`
+
+The command edits 4 files and verifies the build:
+1. `src/enums/index.ts` — adds `FieldKind.MY_FIELD = 'my-field'`
+2. `src/types/fields.ts` — adds `MyFieldConfig` interface + union member
+3. `src/registry/my-field.tsx` — creates a typed skeleton (implement `ConfigEditor`, `FieldRenderer`, `validate`)
+4. `src/registry/index.ts` — imports and registers the plugin
+
+**Manual path** (same 4 files):
 1. Create `src/registry/my-field.tsx` implementing `FieldPlugin<MyFieldConfig>`
-2. Add one line to `src/registry/index.ts`: `registerField(myFieldPlugin)`
+2. Add `registerField(myFieldPlugin)` to `src/registry/index.ts`
+3. Add `FieldKind.MY_FIELD` to `src/enums/index.ts`
+4. Add `MyFieldConfig` to the `FieldConfig` union in `src/types/fields.ts`
 
 No other file changes. The plugin interface is the full contract:
 
