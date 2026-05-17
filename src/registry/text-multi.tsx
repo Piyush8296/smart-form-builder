@@ -1,16 +1,17 @@
+import { FieldKind, FieldGroup } from '../enums';
 import type { FieldPlugin } from '../types/registry';
 import type { TextMultiConfig } from '../types/fields';
 import { Input } from '../components/ui/Input';
 
 export const textMultiPlugin: FieldPlugin<TextMultiConfig> = {
-  kind: 'text-multi',
+  kind: FieldKind.TEXT_MULTI,
   displayName: 'Paragraph',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
-  group: 'input',
+  group: FieldGroup.INPUT,
 
   createDefault: (id) => ({
     id,
-    kind: 'text-multi',
+    kind: FieldKind.TEXT_MULTI,
     label: 'Paragraph',
     conditions: [],
     defaultVisible: true,

@@ -10,15 +10,11 @@ export function useStorage() {
   const [error, setError] = useState<string | null>(null);
 
   const loadTemplate = useCallback((id: string): Template | null => {
-    const t = getTemplate(id);
-    if (!t) setError(`Template "${id}" not found.`);
-    return t;
+    return getTemplate(id);
   }, []);
 
   const loadInstance = useCallback((id: string): Instance | null => {
-    const i = getInstance(id);
-    if (!i) setError(`Response "${id}" not found.`);
-    return i;
+    return getInstance(id);
   }, []);
 
   const loadInstances = useCallback((templateId: string) => {

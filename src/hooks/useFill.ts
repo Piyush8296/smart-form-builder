@@ -1,49 +1,68 @@
+import { useMemo, useCallback } from 'react';
 import { useFillContext } from '../contexts/FillContext';
 import type { FieldValue } from '../types/fields';
 import { getPlugin } from '../registry';
+import { FillActionType } from '../enums';
 
 export function useFill() {
   const { state, dispatch, submit } = useFillContext();
   const { template, answers, visibilityMap, errors, submitted, submitError } = state;
 
-  const visibleFields = template.fields.filter((f) => visibilityMap.get(f.id)?.visible ?? true);
+  const visibleFields = useMemo(
+    () => template.fields.filter((f) => visibilityMap.get(f.id)?.visible ?? true),
+    [template.fields, visibilityMap],
+  );
 
-  function setAnswer(fieldId: string, value: FieldValue) {
-    dispatch({ type: 'SET_ANSWER', payload: { fieldId, value } });
-  }
+  const interactiveFieldCount = useMemo(
+    () => visibleFields.filter((f) => {
+      const p = getPlugin(f.kind);
+      return !p.isDisplayOnly && !p.isComputed;
+    }).length,
+    [visibleFields],
+  );
 
-  function getAnswer(fieldId: string): FieldValue {
+  const completedCount = useMemo(
+    () => visibleFields.filter((f) => {
+      const plugin = getPlugin(f.kind);
+      if (plugin.isDisplayOnly || plugin.isComputed) return false;
+      const val = answers.get(f.id);
+      return val !== null && val !== undefined && val !== '';
+    }).length,
+    [visibleFields, answers],
+  );
+
+  const requiredTotal = useMemo(
+    () => visibleFields.filter((f) => visibilityMap.get(f.id)?.required ?? false).length,
+    [visibleFields, visibilityMap],
+  );
+
+  const setAnswer = useCallback((fieldId: string, value: FieldValue) => {
+    dispatch({ type: FillActionType.SET_ANSWER, payload: { fieldId, value } });
+  }, [dispatch]);
+
+  const getAnswer = useCallback((fieldId: string): FieldValue => {
     return answers.get(fieldId) ?? null;
-  }
+  }, [answers]);
 
-  function isVisible(fieldId: string): boolean {
+  const isVisible = useCallback((fieldId: string): boolean => {
     return visibilityMap.get(fieldId)?.visible ?? true;
-  }
+  }, [visibilityMap]);
 
-  function isRequired(fieldId: string): boolean {
+  const isRequired = useCallback((fieldId: string): boolean => {
     return visibilityMap.get(fieldId)?.required ?? false;
-  }
+  }, [visibilityMap]);
 
-  function getError(fieldId: string): string | null {
+  const getError = useCallback((fieldId: string): string | null => {
     return errors.get(fieldId) ?? null;
-  }
+  }, [errors]);
 
-  function loadDraft(draftAnswers: Map<string, FieldValue>) {
-    dispatch({ type: 'LOAD_DRAFT', payload: draftAnswers });
-  }
+  const loadDraft = useCallback((draftAnswers: Map<string, FieldValue>) => {
+    dispatch({ type: FillActionType.LOAD_DRAFT, payload: draftAnswers });
+  }, [dispatch]);
 
-  function reset() {
-    dispatch({ type: 'RESET' });
-  }
-
-  const completedCount = visibleFields.filter((f) => {
-    const plugin = getPlugin(f.kind);
-    if (plugin.isDisplayOnly || plugin.isComputed) return false;
-    const val = answers.get(f.id);
-    return val !== null && val !== undefined && val !== '';
-  }).length;
-
-  const requiredTotal = visibleFields.filter((f) => isRequired(f.id)).length;
+  const reset = useCallback(() => {
+    dispatch({ type: FillActionType.RESET });
+  }, [dispatch]);
 
   return {
     template,
@@ -54,6 +73,7 @@ export function useFill() {
     submitted,
     submitError,
     completedCount,
+    interactiveFieldCount,
     requiredTotal,
     setAnswer,
     getAnswer,

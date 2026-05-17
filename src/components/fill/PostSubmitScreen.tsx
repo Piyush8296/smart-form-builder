@@ -1,16 +1,11 @@
 import { Button } from '../ui/Button';
+import { ICON_CHECK_CIRCLE } from '../../constants/icons';
 
 interface PostSubmitScreenProps {
   message: string;
   showSubmitAnother: boolean;
   onSubmitAnother: () => void;
 }
-
-const ICON_CHECK_CIRCLE = (
-  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" />
-  </svg>
-);
 
 export function PostSubmitScreen({ message, showSubmitAnother, onSubmitAnother }: PostSubmitScreenProps) {
   return (

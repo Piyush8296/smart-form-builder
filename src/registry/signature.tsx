@@ -1,3 +1,4 @@
+import { FieldKind, FieldGroup } from '../enums';
 import { useRef, useEffect, useState } from 'react';
 import type { FieldPlugin } from '../types/registry';
 import type { SignatureConfig, SignatureValue, FieldValue } from '../types/fields';
@@ -66,14 +67,14 @@ function SignatureCanvas({ onChange, disabled }: { onChange: (v: SignatureValue 
 }
 
 export const signaturePlugin: FieldPlugin<SignatureConfig> = {
-  kind: 'signature',
+  kind: FieldKind.SIGNATURE,
   displayName: 'Signature',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 19c4-4 8 4 12 0s4-12 6-12"/><path d="M3 21h18"/></svg>',
-  group: 'special',
+  group: FieldGroup.SPECIAL,
 
   createDefault: (id) => ({
     id,
-    kind: 'signature',
+    kind: FieldKind.SIGNATURE,
     label: 'Signature',
     conditions: [],
     defaultVisible: true,

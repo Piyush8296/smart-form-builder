@@ -1,17 +1,18 @@
+import { FieldKind, FieldGroup } from '../enums';
 import type { FieldPlugin } from '../types/registry';
 import type { LinearScaleConfig } from '../types/fields';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 
 export const linearScalePlugin: FieldPlugin<LinearScaleConfig> = {
-  kind: 'linear-scale',
+  kind: FieldKind.LINEAR_SCALE,
   displayName: 'Linear scale',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 12h18"/><path d="M6 9v6M10 9v6M14 9v6M18 9v6"/></svg>',
-  group: 'input',
+  group: FieldGroup.INPUT,
 
   createDefault: (id) => ({
     id,
-    kind: 'linear-scale',
+    kind: FieldKind.LINEAR_SCALE,
     label: 'Linear scale',
     conditions: [],
     defaultVisible: true,

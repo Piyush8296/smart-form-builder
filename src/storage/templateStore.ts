@@ -1,3 +1,4 @@
+import { FieldKind } from '../enums';
 import type { Template, TemplateSummary } from '../types/template';
 import { TEMPLATES_KEY, templateKey } from './keys';
 
@@ -33,7 +34,7 @@ export function saveTemplate(t: Template): void {
     const summary: TemplateSummary = {
       id: t.id,
       title: t.title,
-      fieldCount: t.fields.filter((f) => f.kind !== 'section-header').length,
+      fieldCount: t.fields.filter((f) => f.kind !== FieldKind.SECTION_HEADER).length,
       updatedAt: t.updatedAt,
     };
     const idx = summaries.findIndex((s) => s.id === t.id);

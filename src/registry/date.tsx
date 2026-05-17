@@ -1,3 +1,4 @@
+import { FieldKind, FieldGroup } from '../enums';
 import { useEffect } from 'react';
 import type { FieldPlugin } from '../types/registry';
 import type { DateConfig } from '../types/fields';
@@ -5,14 +6,14 @@ import { Input } from '../components/ui/Input';
 import { Toggle } from '../components/ui/Toggle';
 
 export const datePlugin: FieldPlugin<DateConfig> = {
-  kind: 'date',
+  kind: FieldKind.DATE,
   displayName: 'Date',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
-  group: 'input',
+  group: FieldGroup.INPUT,
 
   createDefault: (id) => ({
     id,
-    kind: 'date',
+    kind: FieldKind.DATE,
     label: 'Date',
     conditions: [],
     defaultVisible: true,

@@ -1,4 +1,5 @@
 import { Button } from '../ui/Button';
+import { ICON_ALERT } from '../../constants/icons';
 
 interface FillToolbarProps {
   answeredCount: number;
@@ -8,12 +9,6 @@ interface FillToolbarProps {
   submitError: string | null;
   hasDraft: boolean;
 }
-
-const ICON_ALERT = (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" />
-  </svg>
-);
 
 export function FillToolbar({ answeredCount, totalVisible, onSubmit, onSaveExit, submitError, hasDraft }: FillToolbarProps) {
   return (

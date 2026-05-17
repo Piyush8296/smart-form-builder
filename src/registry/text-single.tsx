@@ -1,16 +1,17 @@
+import { FieldKind, FieldGroup } from '../enums';
 import type { FieldPlugin } from '../types/registry';
 import type { TextSingleConfig } from '../types/fields';
 import { Input } from '../components/ui/Input';
 
 export const textSinglePlugin: FieldPlugin<TextSingleConfig> = {
-  kind: 'text-single',
+  kind: FieldKind.TEXT_SINGLE,
   displayName: 'Short text',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7V5h16v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg>',
-  group: 'input',
+  group: FieldGroup.INPUT,
 
   createDefault: (id) => ({
     id,
-    kind: 'text-single',
+    kind: FieldKind.TEXT_SINGLE,
     label: 'Short text',
     conditions: [],
     defaultVisible: true,

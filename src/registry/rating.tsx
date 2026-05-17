@@ -1,3 +1,4 @@
+import { FieldKind, FieldGroup } from '../enums';
 import { useState } from 'react';
 import type { FieldPlugin } from '../types/registry';
 import type { RatingConfig } from '../types/fields';
@@ -5,14 +6,14 @@ import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 
 export const ratingPlugin: FieldPlugin<RatingConfig> = {
-  kind: 'rating',
+  kind: FieldKind.RATING,
   displayName: 'Rating',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 14.6 8.6l7 .6-5.3 4.6 1.6 6.8L12 16.9 6.1 20.6l1.6-6.8L2.4 9.2l7-.6z"/></svg>',
-  group: 'input',
+  group: FieldGroup.INPUT,
 
   createDefault: (id) => ({
     id,
-    kind: 'rating',
+    kind: FieldKind.RATING,
     label: 'Rating',
     conditions: [],
     defaultVisible: true,

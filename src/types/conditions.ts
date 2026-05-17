@@ -1,13 +1,6 @@
-export type ConditionOperator =
-  | 'equals'
-  | 'not_equals'
-  | 'contains'
-  | 'greater_than'
-  | 'less_than'
-  | 'is_empty'
-  | 'is_not_empty';
+import { ConditionOperator, ConditionEffect } from '../enums';
 
-export type ConditionEffect = 'show' | 'hide' | 'require' | 'unrequire';
+export { ConditionOperator, ConditionEffect };
 
 export interface Condition {
   id: string;

@@ -1,29 +1,31 @@
+import { FieldKind, FieldGroup, CalculationOperation } from '../enums';
 import type { FieldPlugin } from '../types/registry';
 import type { CalculationConfig } from '../types/fields';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
+import { CALCULATION_OPERATIONS } from '../constants/calculationOperations';
 
 export const calculationPlugin: FieldPlugin<CalculationConfig> = {
-  kind: 'calculation',
+  kind: FieldKind.CALCULATION,
   displayName: 'Calculation',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg>',
-  group: 'special',
+  group: FieldGroup.SPECIAL,
   isComputed: true,
 
   createDefault: (id) => ({
     id,
-    kind: 'calculation',
+    kind: FieldKind.CALCULATION,
     label: 'Calculation',
     conditions: [],
     defaultVisible: true,
     defaultRequired: false,
-    operation: 'sum',
+    operation: CalculationOperation.SUM,
     sourceFieldIds: [],
   }),
 
   ConfigEditor: ({ config, allFields, onChange }) => {
     const numericFields = allFields.filter((f) =>
-      f.kind === 'number' || f.kind === 'calculation' || f.kind === 'rating' || f.kind === 'linear-scale'
+      f.kind === FieldKind.NUMBER || f.kind === FieldKind.CALCULATION || f.kind === FieldKind.RATING || f.kind === FieldKind.LINEAR_SCALE
     );
     return (
       <div className="space-y-3">
@@ -33,11 +35,10 @@ export const calculationPlugin: FieldPlugin<CalculationConfig> = {
         </div>
         <div>
           <label className="block text-caption font-medium text-ink-2 mb-1.5">Operation</label>
-          <Select value={config.operation} onChange={(e) => onChange({ ...config, operation: e.target.value as CalculationConfig['operation'] })}>
-            <option value="sum">Sum</option>
-            <option value="avg">Average</option>
-            <option value="min">Min</option>
-            <option value="max">Max</option>
+          <Select value={config.operation} onChange={(e) => onChange({ ...config, operation: e.target.value as CalculationOperation })}>
+            {CALCULATION_OPERATIONS.map((op) => (
+              <option key={op.value} value={op.value}>{op.label}</option>
+            ))}
           </Select>
         </div>
         <div>

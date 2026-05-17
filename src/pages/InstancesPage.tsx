@@ -1,61 +1,29 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Brand } from '../components/ui/Brand';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { useStorage } from '../hooks/useStorage';
 import { useSession } from '../contexts/SessionContext';
 import { isOwner } from '../storage/accessStore';
-import type { InstanceSummary } from '../types/instance';
+import { useInstancesPage } from '../hooks/useInstancesPage';
 
-const ICON_SEARCH = (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
-  </svg>
-);
-const ICON_MENU = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <path d="M4 6h16M4 12h16M4 18h16" />
-  </svg>
-);
+import { ICON_SEARCH, ICON_MENU } from '../constants/icons';
 
 export default function InstancesPage() {
   const { id: templateId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { loadTemplate, loadInstances, removeInstance, error } = useStorage();
   const { session } = useSession();
-  const [search, setSearch] = useState('');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  if (!templateId) { navigate('/'); return null; }
 
   // SAFETY: InstancesPage renders behind AuthGuard, which guarantees session is non-null.
-  if (!isOwner(session!.userId, templateId)) {
-    navigate('/');
-    return null;
-  }
+  const shouldRedirect = !templateId || !isOwner(session!.userId, templateId ?? '');
+  useEffect(() => {
+    if (shouldRedirect) navigate('/');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldRedirect]);
 
-  const template = loadTemplate(templateId);
-  const allInstances: InstanceSummary[] = loadInstances(templateId);
+  const { template, allInstances, filtered, search, setSearch, deleteId, error, exportCSV, confirmDelete, cancelDelete, executeDelete } = useInstancesPage(templateId ?? '');
 
-  const filtered = allInstances.filter((inst) =>
-    inst.id.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  function handleExportCSV() {
-    const rows = [['ID', 'Submitted At']];
-    for (const inst of allInstances) {
-      rows.push([inst.id, inst.submittedAt]);
-    }
-    const csv = rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${template?.title ?? templateId}-responses.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+  if (shouldRedirect) return null;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -89,7 +57,7 @@ export default function InstancesPage() {
                 <p className="text-muted mt-1 text-sm mb-0">{allInstances.length} responses</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="secondary" onClick={handleExportCSV}>Export CSV</Button>
+                <Button variant="secondary" onClick={exportCSV}>Export CSV</Button>
                 {template && (
                   <Button variant="secondary" onClick={() => navigate(`/builder/${templateId}`)}>Edit form</Button>
                 )}
@@ -126,13 +94,7 @@ export default function InstancesPage() {
                     {new Date(inst.submittedAt).toLocaleString()}
                   </span>
                   <span className="flex gap-1 justify-end max-mob:justify-start max-mob:mt-1.5">
-                    <Button
-                      variant="danger-ghost"
-                      size="sm"
-                      onClick={() => setDeleteId(inst.id)}
-                    >
-                      Delete
-                    </Button>
+                    <Button variant="danger-ghost" size="sm" onClick={() => confirmDelete(inst.id)}>Delete</Button>
                   </span>
                 </div>
               ))}
@@ -143,12 +105,12 @@ export default function InstancesPage() {
 
       <Modal
         open={deleteId !== null}
-        onClose={() => setDeleteId(null)}
+        onClose={cancelDelete}
         title="Delete response"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancel</Button>
-            <Button variant="danger-ghost" onClick={() => { if (deleteId) removeInstance(deleteId, templateId); setDeleteId(null); }}>Delete</Button>
+            <Button variant="secondary" onClick={cancelDelete}>Cancel</Button>
+            <Button variant="danger-ghost" onClick={executeDelete}>Delete</Button>
           </>
         }
       >

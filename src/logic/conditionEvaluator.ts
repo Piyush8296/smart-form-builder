@@ -1,28 +1,29 @@
+import { ConditionOperator, ConditionEffect } from '../enums';
 import type { FieldConfig, FieldValue } from '../types/fields';
 import type { Condition, FieldVisibilityState } from '../types/conditions';
 
 function evaluateCondition(condition: Condition, targetValue: FieldValue): boolean {
   const { operator, value } = condition;
 
-  if (operator === 'is_empty') {
+  if (operator === ConditionOperator.IS_EMPTY) {
     return targetValue === null || targetValue === '' || (Array.isArray(targetValue) && targetValue.length === 0);
   }
-  if (operator === 'is_not_empty') {
+  if (operator === ConditionOperator.IS_NOT_EMPTY) {
     return targetValue !== null && targetValue !== '' && !(Array.isArray(targetValue) && targetValue.length === 0);
   }
 
   if (targetValue === null) return false;
 
   switch (operator) {
-    case 'equals':
+    case ConditionOperator.EQUALS:
       return String(targetValue) === String(value);
-    case 'not_equals':
+    case ConditionOperator.NOT_EQUALS:
       return String(targetValue) !== String(value);
-    case 'contains':
+    case ConditionOperator.CONTAINS:
       return typeof targetValue === 'string' && targetValue.includes(String(value));
-    case 'greater_than':
+    case ConditionOperator.GREATER_THAN:
       return typeof targetValue === 'number' && typeof value === 'number' && targetValue > value;
-    case 'less_than':
+    case ConditionOperator.LESS_THAN:
       return typeof targetValue === 'number' && typeof value === 'number' && targetValue < value;
     default:
       return false;
@@ -31,7 +32,6 @@ function evaluateCondition(condition: Condition, targetValue: FieldValue): boole
 
 function topologicalSort(fields: FieldConfig[]): FieldConfig[] {
   const idToField = new Map(fields.map((f) => [f.id, f]));
-  // adjacency: fieldId → set of field ids whose conditions target it
   const dependents = new Map<string, Set<string>>();
   const inDegree = new Map<string, number>();
 
@@ -48,7 +48,6 @@ function topologicalSort(fields: FieldConfig[]): FieldConfig[] {
     }
   }
 
-  // fields with no conditions go first
   const queue: string[] = [];
   for (const [id, deg] of inDegree) {
     if (deg === 0) queue.push(id);
@@ -71,7 +70,6 @@ function topologicalSort(fields: FieldConfig[]): FieldConfig[] {
     }
   }
 
-  // any unvisited fields are in a cycle — append with warning
   for (const field of fields) {
     if (!visited.has(field.id)) {
       console.warn(`[conditionEvaluator] cycle detected involving field "${field.id}" — falling back to defaultVisible`);
@@ -110,10 +108,10 @@ export function evaluateAllFields(
 
       if (evaluateCondition(condition, targetValue)) {
         switch (condition.effect) {
-          case 'show':      visible = true;  break;
-          case 'hide':      visible = false; break;
-          case 'require':   required = true; break;
-          case 'unrequire': required = false; break;
+          case ConditionEffect.SHOW:      visible = true;  break;
+          case ConditionEffect.HIDE:      visible = false; break;
+          case ConditionEffect.REQUIRE:   required = true; break;
+          case ConditionEffect.UNREQUIRE: required = false; break;
         }
       }
     }

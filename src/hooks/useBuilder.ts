@@ -1,50 +1,52 @@
+import { useMemo, useCallback } from 'react';
 import { useBuildContext } from '../contexts/BuilderContext';
-import type { FieldConfig } from '../types/fields';
-import type { FieldKind } from '../types/fields';
+import type { FieldConfig, FieldKind } from '../types/fields';
 import { getPlugin } from '../registry';
 import { generateId } from '../utils/id';
+import { BuilderActionType } from '../enums';
 
 export function useBuilder() {
   const { state, dispatch } = useBuildContext();
-  const { template, selectedFieldId, isDirty } = state;
+  const { template, selectedFieldId, hasUnsavedChanges } = state;
 
-  const selectedField = selectedFieldId
-    ? template.fields.find((f) => f.id === selectedFieldId) ?? null
-    : null;
+  const selectedField = useMemo(
+    () => selectedFieldId ? template.fields.find((f) => f.id === selectedFieldId) ?? null : null,
+    [selectedFieldId, template.fields],
+  );
 
-  function addField(kind: FieldKind) {
+  const addField = useCallback((kind: FieldKind) => {
     const id = generateId();
     const plugin = getPlugin(kind);
     const field = plugin.createDefault(id);
-    dispatch({ type: 'ADD_FIELD', payload: field });
-  }
+    dispatch({ type: BuilderActionType.ADD_FIELD, payload: field });
+  }, [dispatch]);
 
-  function removeField(id: string) {
-    dispatch({ type: 'REMOVE_FIELD', payload: id });
-  }
+  const removeField = useCallback((id: string) => {
+    dispatch({ type: BuilderActionType.REMOVE_FIELD, payload: id });
+  }, [dispatch]);
 
-  function updateField(field: FieldConfig) {
-    dispatch({ type: 'UPDATE_FIELD', payload: field });
-  }
+  const updateField = useCallback((field: FieldConfig) => {
+    dispatch({ type: BuilderActionType.UPDATE_FIELD, payload: field });
+  }, [dispatch]);
 
-  function moveField(from: number, to: number) {
-    dispatch({ type: 'MOVE_FIELD', payload: { from, to } });
-  }
+  const moveField = useCallback((from: number, to: number) => {
+    dispatch({ type: BuilderActionType.MOVE_FIELD, payload: { from, to } });
+  }, [dispatch]);
 
-  function selectField(id: string | null) {
-    dispatch({ type: 'SELECT_FIELD', payload: id });
-  }
+  const selectField = useCallback((id: string | null) => {
+    dispatch({ type: BuilderActionType.SELECT_FIELD, payload: id });
+  }, [dispatch]);
 
-  function duplicateField(id: string) {
-    dispatch({ type: 'DUPLICATE_FIELD', payload: id });
-  }
+  const duplicateField = useCallback((id: string) => {
+    dispatch({ type: BuilderActionType.DUPLICATE_FIELD, payload: id });
+  }, [dispatch]);
 
   return {
     template,
     fields: template.fields,
     selectedFieldId,
     selectedField,
-    isDirty,
+    hasUnsavedChanges,
     dispatch,
     addField,
     removeField,

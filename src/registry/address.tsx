@@ -1,7 +1,9 @@
+import { FieldKind, FieldGroup } from '../enums';
 import type { FieldPlugin } from '../types/registry';
 import type { AddressConfig, AddressValue, FieldValue } from '../types/fields';
 import { Input } from '../components/ui/Input';
 import { Toggle } from '../components/ui/Toggle';
+import { ADDRESS_TOGGLE_CONFIGS } from '../constants/addressToggles';
 
 function isAddressValue(v: FieldValue): v is AddressValue {
   return typeof v === 'object' && v !== null && !Array.isArray(v) && 'street1' in v;
@@ -12,14 +14,14 @@ function emptyAddress(): AddressValue {
 }
 
 export const addressPlugin: FieldPlugin<AddressConfig> = {
-  kind: 'address',
+  kind: FieldKind.ADDRESS,
   displayName: 'Address',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
-  group: 'input',
+  group: FieldGroup.INPUT,
 
   createDefault: (id) => ({
     id,
-    kind: 'address',
+    kind: FieldKind.ADDRESS,
     label: 'Address',
     conditions: [],
     defaultVisible: true,
@@ -39,9 +41,14 @@ export const addressPlugin: FieldPlugin<AddressConfig> = {
         <label className="block text-caption font-medium text-ink-2 mb-1.5">Description</label>
         <Input value={config.description ?? ''} onChange={(e) => onChange({ ...config, description: e.target.value || undefined })} />
       </div>
-      <Toggle on={config.includeStreet2} onChange={(v) => onChange({ ...config, includeStreet2: v })} label="Include address line 2" />
-      <Toggle on={config.includeState} onChange={(v) => onChange({ ...config, includeState: v })} label="Include state / province" />
-      <Toggle on={config.includeZip} onChange={(v) => onChange({ ...config, includeZip: v })} label="Include ZIP / postal code" />
+      {ADDRESS_TOGGLE_CONFIGS.map(({ key, label }) => (
+        <Toggle
+          key={key}
+          on={config[key]}
+          onChange={(v) => onChange({ ...config, [key]: v })}
+          label={label}
+        />
+      ))}
       <div>
         <label className="block text-caption font-medium text-ink-2 mb-1.5">Fixed country (leave blank to show dropdown)</label>
         <Input value={config.countryFixed ?? ''} onChange={(e) => onChange({ ...config, countryFixed: e.target.value || undefined })} placeholder="e.g. United States" />

@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { FieldKind, FieldGroup } from '../enums';
 import type { FieldPlugin } from '../types/registry';
 import type { MultiSelectConfig } from '../types/fields';
 import { OTHER_OPTION_ID } from '../types/fields';
@@ -6,6 +7,7 @@ import { Input } from '../components/ui/Input';
 import { Toggle } from '../components/ui/Toggle';
 import { Button } from '../components/ui/Button';
 import { generateId } from '../utils/id';
+import { useDebounce } from '../hooks/useDebounce';
 
 function fisherYates<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -22,14 +24,14 @@ function getOtherText(values: string[]): string {
 }
 
 export const multiSelectPlugin: FieldPlugin<MultiSelectConfig> = {
-  kind: 'multi-select',
+  kind: FieldKind.MULTI_SELECT,
   displayName: 'Multi select',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/></svg>',
-  group: 'select',
+  group: FieldGroup.SELECT,
 
   createDefault: (id) => ({
     id,
-    kind: 'multi-select',
+    kind: FieldKind.MULTI_SELECT,
     label: 'Multi select',
     conditions: [],
     defaultVisible: true,
@@ -88,14 +90,24 @@ export const multiSelectPlugin: FieldPlugin<MultiSelectConfig> = {
   FieldRenderer: ({ config, value, onChange, error, disabled }) => {
     const selected: string[] = Array.isArray(value) ? value : [];
     const [query, setQuery] = useState('');
+    const debouncedQuery = useDebounce(query, 300);
     const shuffledRef = useRef(config.shuffleOptions ? fisherYates(config.options) : config.options);
     useEffect(() => { shuffledRef.current = config.shuffleOptions ? fisherYates(config.options) : config.options; }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const displayOptions = [
-      ...shuffledRef.current,
-      ...(config.allowOther ? [{ id: OTHER_OPTION_ID, label: 'Other' }] : []),
-    ];
-    const filtered = query ? displayOptions.filter((o) => o.label.toLowerCase().includes(query.toLowerCase())) : displayOptions;
+    const displayOptions = useMemo(
+      () => [
+        ...shuffledRef.current,
+        ...(config.allowOther ? [{ id: OTHER_OPTION_ID, label: 'Other' }] : []),
+      ],
+      [config.allowOther],
+    );
+
+    const filtered = useMemo(
+      () => debouncedQuery
+        ? displayOptions.filter((o) => o.label.toLowerCase().includes(debouncedQuery.toLowerCase()))
+        : displayOptions,
+      [debouncedQuery, displayOptions],
+    );
 
     function toggle(id: string) {
       if (selected.includes(id) || selected.some((s) => s.startsWith(`${id}:`))) {

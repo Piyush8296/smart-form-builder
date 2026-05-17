@@ -17,6 +17,8 @@ export function PrintView({ template, instance, visibilityMap }: PrintViewProps)
     return state?.visible !== false;
   });
 
+  // Inline styles intentional: Tailwind utility classes depend on @layer ordering which
+  // breaks in browser print contexts. Inline styles are print-safe and self-contained.
   return (
     <div id="print-view" style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 640, margin: '0 auto', padding: '32px 24px' }}>
       <div style={{ borderTop: '4px solid #000', paddingTop: 16, marginBottom: 24 }}>
