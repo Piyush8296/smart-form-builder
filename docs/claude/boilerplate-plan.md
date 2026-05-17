@@ -89,6 +89,19 @@ import '@testing-library/jest-dom'
 }
 ```
 
+## Additional Dependencies (added during UI/Logic phases)
+
+```json
+"dependencies": {
+  "react-router-dom": "^7.0.0",
+  "clsx": "^2.0.0",
+  "tailwind-merge": "^2.0.0",
+  "@dnd-kit/core": "^6.0.0",
+  "@dnd-kit/sortable": "^8.0.0",
+  "@dnd-kit/utilities": "^3.0.0"
+}
+```
+
 ## Scripts
 ```json
 "dev":       "vite",

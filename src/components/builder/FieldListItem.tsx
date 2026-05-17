@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DragHandle } from '../ui/DragHandle';
@@ -15,7 +16,14 @@ interface FieldListItemProps {
   onToggleRequired: () => void;
 }
 
-export function FieldListItem({ field, selected, onSelect, onDuplicate, onDelete, onToggleRequired }: FieldListItemProps) {
+export const FieldListItem = memo(function FieldListItem({
+  field,
+  selected,
+  onSelect,
+  onDuplicate,
+  onDelete,
+  onToggleRequired,
+}: FieldListItemProps) {
   const plugin = getPlugin(field.kind);
   const hasConditions = field.conditions.length > 0;
   const isHidden = !field.defaultVisible;
@@ -77,4 +85,4 @@ export function FieldListItem({ field, selected, onSelect, onDuplicate, onDelete
       </div>
     </div>
   );
-}
+});

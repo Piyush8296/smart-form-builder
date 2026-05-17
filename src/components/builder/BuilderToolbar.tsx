@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Brand } from '../ui/Brand';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -12,7 +13,14 @@ interface BuilderToolbarProps {
   templateId: string;
 }
 
-export function BuilderToolbar({ title, hasUnsavedChanges, onTitleChange, onSettings, onPreview, templateId }: BuilderToolbarProps) {
+export const BuilderToolbar = memo(function BuilderToolbar({
+  title,
+  hasUnsavedChanges,
+  onTitleChange,
+  onSettings,
+  onPreview,
+  templateId,
+}: BuilderToolbarProps) {
   return (
     <header className="h-14 border-b border-border topbar-glass z-40 flex items-center px-5 flex-none">
       <div className="flex items-center gap-3 w-full max-w-app mx-auto">
@@ -45,4 +53,4 @@ export function BuilderToolbar({ title, hasUnsavedChanges, onTitleChange, onSett
       </div>
     </header>
   );
-}
+});

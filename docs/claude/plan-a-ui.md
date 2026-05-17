@@ -93,7 +93,7 @@ export function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
 
 ---
 
-## A5. `src/components/ui/` — 7 new files
+## A5. `src/components/ui/` — 9 new files
 All use CSS class names from A2. No props defined here — props spec in `plan-b-logic.md § B0`.
 
 - **`Button.tsx`** — renders `.btn` + variant/size modifier classes
@@ -103,6 +103,8 @@ All use CSS class names from A2. No props defined here — props spec in `plan-b
 - **`Modal.tsx`** — renders `.modal-backdrop` + `.modal` with header/body/footer slots
 - **`DragHandle.tsx`** — renders 6-dot grip SVG (3×2 grid of circles), `aria-label="Drag to reorder"`
 - **`Combobox.tsx`** — text input + filtered dropdown list below; keyboard nav (↑↓ Enter Esc); closes on outside click
+- **`SvgIcon.tsx`** — renders inline SVG from string; used by field type list icons and registry plugins
+- **`Brand.tsx`** — brand mark + optional wordmark; props: `nameHidden?: boolean`, `noLink?: boolean`; used in topbar + Suspense fallback
 
 ---
 
@@ -149,7 +151,7 @@ Match `builderScreen()` + `builderScreenMobile()`.
 
 **Left pane** (260px, surface-2):
 - Sticky header "ADD FIELD"
-- Field type groups: Input (Short text T / Paragraph P / Number N / Date D / Time / Phone), Choice (Single select S / Multi select M / Linear scale / Rating), Special (File upload / Signature / Section header H / Calculation)
+- Field type groups: Input (Short text T / Paragraph P / Number N / Date D / Time / Phone / Email / URL / Address), Choice (Single select S / Multi select M / Linear scale / Rating), Special (File upload / Signature / Section header H / Calculation)
 - Each row: 24×24 icon box + label + optional kbd chip
 - Divider + help text at bottom
 
@@ -237,21 +239,20 @@ Stub: 6 hardcoded rows matching design mockup.
 ---
 
 ## A10. `src/router.tsx` — update
+5 lazy pages. `AuthGuard` as nested layout route (see `code-splitting-plan.md` for full router shape).
+
 ```typescript
 const Home          = lazy(() => import('./pages/Home'))
 const BuilderPage   = lazy(() => import('./pages/BuilderPage'))
 const FillPage      = lazy(() => import('./pages/FillPage'))
 const InstancesPage = lazy(() => import('./pages/InstancesPage'))
-
-routes: [
-  { path: '/',                            element: <Suspense><Home /></Suspense> },
-  { path: '/builder/new',                 element: <Suspense><BuilderPage /></Suspense> },
-  { path: '/builder/:id',                 element: <Suspense><BuilderPage /></Suspense> },
-  { path: '/fill/:templateId',            element: <Suspense><FillPage /></Suspense> },
-  { path: '/templates/:id/instances',     element: <Suspense><InstancesPage /></Suspense> },
-]
+const LoginPage     = lazy(() => import('./pages/LoginPage'))
 ```
-Suspense fallback: centered brand mark on `--bg` background.
+
+Public routes: `/login`, `/fill/:templateId`  
+Protected (children of AuthGuard layout): `/`, `/builder/new`, `/builder/:id`, `/templates/:id/instances`
+
+Suspense fallback: `<Brand nameHidden noLink />` centred on `--bg` background.
 
 ---
 

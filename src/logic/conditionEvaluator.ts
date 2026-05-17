@@ -3,7 +3,7 @@ import type { FieldConfig, FieldValue } from '../types/fields';
 import type { Condition, FieldVisibilityState } from '../types/conditions';
 
 function evaluateCondition(condition: Condition, targetValue: FieldValue): boolean {
-  const { operator, value } = condition;
+  const { operator, value, value2 } = condition;
 
   if (operator === ConditionOperator.IS_EMPTY) {
     return targetValue === null || targetValue === '' || (Array.isArray(targetValue) && targetValue.length === 0);
@@ -20,11 +20,39 @@ function evaluateCondition(condition: Condition, targetValue: FieldValue): boole
     case ConditionOperator.NOT_EQUALS:
       return String(targetValue) !== String(value);
     case ConditionOperator.CONTAINS:
-      return typeof targetValue === 'string' && targetValue.includes(String(value));
+      return typeof targetValue === 'string' && targetValue.toLowerCase().includes(String(value).toLowerCase());
     case ConditionOperator.GREATER_THAN:
       return typeof targetValue === 'number' && typeof value === 'number' && targetValue > value;
     case ConditionOperator.LESS_THAN:
       return typeof targetValue === 'number' && typeof value === 'number' && targetValue < value;
+    case ConditionOperator.IS_BEFORE:
+      // Date strings in ISO format (YYYY-MM-DD) compare lexicographically
+      return typeof targetValue === 'string' && typeof value === 'string' && value !== '' && targetValue < value;
+    case ConditionOperator.IS_AFTER:
+      return typeof targetValue === 'string' && typeof value === 'string' && value !== '' && targetValue > value;
+    case ConditionOperator.IS_WITHIN_RANGE:
+      return (
+        typeof targetValue === 'number' &&
+        typeof value === 'number' &&
+        typeof value2 === 'number' &&
+        targetValue >= value &&
+        targetValue <= value2
+      );
+    case ConditionOperator.CONTAINS_ANY_OF: {
+      if (!Array.isArray(targetValue)) return false;
+      const checkSet = String(value).split(',').map((s) => s.trim()).filter(Boolean);
+      return checkSet.some((v) => targetValue.includes(v));
+    }
+    case ConditionOperator.CONTAINS_ALL_OF: {
+      if (!Array.isArray(targetValue)) return false;
+      const checkSet = String(value).split(',').map((s) => s.trim()).filter(Boolean);
+      return checkSet.length > 0 && checkSet.every((v) => targetValue.includes(v));
+    }
+    case ConditionOperator.CONTAINS_NONE_OF: {
+      if (!Array.isArray(targetValue)) return false;
+      const checkSet = String(value).split(',').map((s) => s.trim()).filter(Boolean);
+      return checkSet.length === 0 || !checkSet.some((v) => targetValue.includes(v));
+    }
     default:
       return false;
   }

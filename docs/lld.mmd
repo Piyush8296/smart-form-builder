@@ -1,0 +1,76 @@
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#fafaf8', 'primaryColor': '#fef4ea', 'primaryBorderColor': '#d07935', 'primaryTextColor': '#1e1e28', 'secondaryColor': '#e6f7ef', 'tertiaryColor': '#f0f0ed', 'lineColor': '#808078', 'edgeLabelBackground': '#ffffff', 'clusterBkg': '#f7f7f5', 'clusterBorder': '#d0d0cc', 'titleColor': '#1e1e28', 'fontFamily': 'Geist, ui-sans-serif, system-ui, sans-serif', 'fontSize': '13px'}}}%%
+flowchart TD
+    subgraph Routes ["pages/"]
+        HP["HomePage"]
+        BP["BuilderPage"]
+        FP["FillPage"]
+    end
+
+    subgraph Contexts ["contexts/"]
+        SC["SessionContext\nauth state + current user"]
+        BC["BuilderContext\nform template state"]
+        FC["FillContext\nanswers + visibility map"]
+    end
+
+    subgraph Hooks ["hooks/"]
+        UH["useHome\ntemplate list + CRUD"]
+        UB["useBuilder\nfield ops + conditions"]
+        UF["useFill\nSET_ANSWER pipeline"]
+    end
+
+    subgraph State ["state/  (pure reducers)"]
+        BR["builderReducer\nADD_FIELD · MOVE · DELETE\nUPDATE_CONFIG · ADD_CONDITION"]
+        FR["fillReducer\nSET_ANSWER → eval → calc"]
+    end
+
+    subgraph Logic ["logic/  (pure functions)"]
+        CE["conditionEvaluator\ntopological sort + eval"]
+        CA["calculationEngine\ncomputed field values"]
+        VA["validationEngine\nvisible fields only"]
+    end
+
+    subgraph Storage ["storage/  (localStorage adapters)"]
+        TS["templateStore"]
+        IS["instanceStore"]
+        AU["authStore · accessStore"]
+    end
+
+    subgraph Registry ["registry/  (field plugin system)"]
+        FP2["FieldPlugin × 17\ncreateDefault · ConfigEditor\nFieldRenderer · validate\nformatForPrint"]
+    end
+
+    subgraph Contracts ["types/ · enums/ · constants/"]
+        T["FieldConfig union\nFieldValue · Template\nInstance · Session"]
+    end
+
+    HP --> SC & UH & Storage
+    BP --> BC --> UB --> BR
+    FP --> FC --> UF --> FR
+
+    UF --> CE --> CA
+    CA --> VA
+
+    UB & UF --> Storage
+    BR & FR --> Registry
+    Registry --> Contracts
+    State --> Contracts
+    Logic --> Contracts
+    Storage --> Contracts
+
+    classDef routes    fill:#fef4ea,stroke:#d07935,color:#1e1e28
+    classDef contexts  fill:#e8f4fe,stroke:#3b82f6,color:#1e1e28
+    classDef hooks     fill:#f3eefe,stroke:#7c3aed,color:#1e1e28
+    classDef state     fill:#e6f7ef,stroke:#3a9a68,color:#1e1e28
+    classDef logic     fill:#e6f7f5,stroke:#0d9488,color:#1e1e28
+    classDef storage   fill:#fef9e8,stroke:#ca9a2a,color:#1e1e28
+    classDef registry  fill:#fee8e5,stroke:#c84835,color:#1e1e28
+    classDef contracts fill:#f0f0ed,stroke:#808078,color:#1e1e28
+
+    class HP,BP,FP routes
+    class SC,BC,FC contexts
+    class UH,UB,UF hooks
+    class BR,FR state
+    class CE,CA,VA logic
+    class TS,IS,AU storage
+    class FP2 registry
+    class T contracts

@@ -7,6 +7,7 @@ export interface Condition {
   targetFieldId: string;
   operator: ConditionOperator;
   value: string | number | null;
+  value2?: number | null; // upper bound for IS_WITHIN_RANGE
   effect: ConditionEffect;
 }
 

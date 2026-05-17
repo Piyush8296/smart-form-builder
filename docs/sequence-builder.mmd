@@ -1,0 +1,21 @@
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#fafaf8', 'primaryColor': '#fef4ea', 'primaryBorderColor': '#d07935', 'primaryTextColor': '#1e1e28', 'actorBkg': '#fef4ea', 'actorBorder': '#d07935', 'actorTextColor': '#1e1e28', 'actorLineColor': '#d0d0cc', 'signalColor': '#808078', 'signalTextColor': '#1e1e28', 'activationBkgColor': '#fde8d0', 'activationBorderColor': '#d07935', 'labelBoxBkgColor': '#f7f7f5', 'labelBoxBorderColor': '#d0d0cc', 'noteBkgColor': '#fef9e8', 'noteBorderColor': '#ca9a2a', 'fontFamily': 'Geist, ui-sans-serif, system-ui, sans-serif', 'fontSize': '13px'}}}%%
+sequenceDiagram
+    participant U as User (Builder)
+    participant BR as builderReducer
+    participant TS as templateStore
+    participant React as React (memo)
+
+    U->>BR: ADD_FIELD / MOVE / DELETE
+    BR-->>React: new fields[]
+    React-->>U: re-render FieldList
+
+    U->>BR: UPDATE_CONFIG {fieldId, patch}
+    BR-->>React: updated field config
+    React-->>U: re-render ConfigPanel
+
+    U->>BR: ADD_CONDITION / REMOVE_CONDITION
+    BR-->>React: updated conditions[]
+    React-->>U: re-render ConditionEditor
+
+    BR->>TS: autoSave (debounced 500ms)
+    TS-->>BR: persisted to localStorage

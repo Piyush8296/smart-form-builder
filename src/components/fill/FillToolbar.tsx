@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Button } from '../ui/Button';
 import { ICON_ALERT } from '../../constants/icons';
 
@@ -10,7 +11,14 @@ interface FillToolbarProps {
   hasDraft: boolean;
 }
 
-export function FillToolbar({ answeredCount, totalVisible, onSubmit, onSaveExit, submitError, hasDraft }: FillToolbarProps) {
+export const FillToolbar = memo(function FillToolbar({
+  answeredCount,
+  totalVisible,
+  onSubmit,
+  onSaveExit,
+  submitError,
+  hasDraft,
+}: FillToolbarProps) {
   return (
     <div className="mt-6">
       {submitError && (
@@ -31,4 +39,4 @@ export function FillToolbar({ answeredCount, totalVisible, onSubmit, onSaveExit,
       </div>
     </div>
   );
-}
+});

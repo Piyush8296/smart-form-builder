@@ -1,9 +1,11 @@
+import { memo } from 'react';
+
 interface ProgressBarProps {
   answered: number;
   total: number;
 }
 
-export function ProgressBar({ answered, total }: ProgressBarProps) {
+export const ProgressBar = memo(function ProgressBar({ answered, total }: ProgressBarProps) {
   const pct = total > 0 ? Math.round((answered / total) * 100) : 0;
 
   return (
@@ -27,4 +29,4 @@ export function ProgressBar({ answered, total }: ProgressBarProps) {
       </div>
     </div>
   );
-}
+});
