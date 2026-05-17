@@ -21,7 +21,7 @@ function BuilderInner() {
   const {
     template, fields, selectedFieldId, selectedField, hasUnsavedChanges,
     addField, removeField, updateField, moveField, selectField, duplicateField,
-    dispatch,
+    dispatch, saveForm,
   } = useBuilder();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileLeft, setMobileLeft] = useState(false);
@@ -32,9 +32,11 @@ function BuilderInner() {
       <BuilderToolbar
         title={template.title}
         hasUnsavedChanges={hasUnsavedChanges}
+        isDraft={!!template.isDraft}
         onTitleChange={(title) => dispatch({ type: BuilderActionType.SET_TITLE, payload: title })}
         onSettings={() => setSettingsOpen(true)}
         onPreview={() => window.open(`/fill/${template.id}`, '_blank')}
+        onSave={saveForm}
         templateId={template.id}
       />
 

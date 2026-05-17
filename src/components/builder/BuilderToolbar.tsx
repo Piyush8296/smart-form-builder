@@ -7,20 +7,26 @@ import { ICON_SETTINGS, ICON_EYE } from '../../constants/icons';
 interface BuilderToolbarProps {
   title: string;
   hasUnsavedChanges: boolean;
+  isDraft: boolean;
   onTitleChange: (title: string) => void;
   onSettings: () => void;
   onPreview: () => void;
+  onSave: () => void;
   templateId: string;
 }
 
 export const BuilderToolbar = memo(function BuilderToolbar({
   title,
   hasUnsavedChanges,
+  isDraft,
   onTitleChange,
   onSettings,
   onPreview,
+  onSave,
   templateId,
 }: BuilderToolbarProps) {
+  const canSave = hasUnsavedChanges || isDraft;
+
   return (
     <header className="h-14 border-b border-border topbar-glass z-40 flex items-center px-5 flex-none">
       <div className="flex items-center gap-3 w-full max-w-app mx-auto">
@@ -33,7 +39,7 @@ export const BuilderToolbar = memo(function BuilderToolbar({
             placeholder="Untitled form"
           />
           <span className="text-muted text-caption font-mono whitespace-nowrap">
-            {hasUnsavedChanges ? 'Unsaved changes' : 'Saved'}
+            {isDraft ? 'Draft' : hasUnsavedChanges ? 'Unsaved changes' : 'Saved'}
           </span>
         </div>
         <Button variant="ghost" size="sm" icon title="Settings" onClick={onSettings}>
@@ -42,14 +48,19 @@ export const BuilderToolbar = memo(function BuilderToolbar({
         <Button variant="secondary" size="sm" onClick={onPreview}>
           {ICON_EYE} Preview
         </Button>
-        <a
-          href={`/fill/${templateId}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-primary btn-sm"
-        >
-          Open form
-        </a>
+        <Button variant="secondary" size="sm" onClick={onSave} disabled={!canSave}>
+          Save
+        </Button>
+        {!isDraft && (
+          <a
+            href={`/fill/${templateId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-primary btn-sm"
+          >
+            Open form
+          </a>
+        )}
       </div>
     </header>
   );
