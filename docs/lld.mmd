@@ -1,3 +1,4 @@
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#fafaf8', 'primaryColor': '#fef4ea', 'primaryBorderColor': '#d07935', 'primaryTextColor': '#1e1e28', 'secondaryColor': '#e6f7ef', 'tertiaryColor': '#f0f0ed', 'lineColor': '#808078', 'edgeLabelBackground': '#ffffff', 'clusterBkg': '#f7f7f5', 'clusterBorder': '#d0d0cc', 'titleColor': '#1e1e28', 'fontFamily': 'Geist, ui-sans-serif, system-ui, sans-serif', 'fontSize': '13px'}}}%%
 flowchart TD
     subgraph Routes ["pages/"]
         HP["HomePage"]
@@ -55,3 +56,21 @@ flowchart TD
     State --> Contracts
     Logic --> Contracts
     Storage --> Contracts
+
+    classDef routes    fill:#fef4ea,stroke:#d07935,color:#1e1e28
+    classDef contexts  fill:#e8f4fe,stroke:#3b82f6,color:#1e1e28
+    classDef hooks     fill:#f3eefe,stroke:#7c3aed,color:#1e1e28
+    classDef state     fill:#e6f7ef,stroke:#3a9a68,color:#1e1e28
+    classDef logic     fill:#e6f7f5,stroke:#0d9488,color:#1e1e28
+    classDef storage   fill:#fef9e8,stroke:#ca9a2a,color:#1e1e28
+    classDef registry  fill:#fee8e5,stroke:#c84835,color:#1e1e28
+    classDef contracts fill:#f0f0ed,stroke:#808078,color:#1e1e28
+
+    class HP,BP,FP routes
+    class SC,BC,FC contexts
+    class UH,UB,UF hooks
+    class BR,FR state
+    class CE,CA,VA logic
+    class TS,IS,AU storage
+    class FP2 registry
+    class T contracts

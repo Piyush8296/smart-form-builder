@@ -1,3 +1,4 @@
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#fafaf8', 'primaryColor': '#fef4ea', 'primaryBorderColor': '#d07935', 'primaryTextColor': '#1e1e28', 'secondaryColor': '#e6f7ef', 'tertiaryColor': '#f0f0ed', 'lineColor': '#808078', 'edgeLabelBackground': '#ffffff', 'clusterBkg': '#f7f7f5', 'clusterBorder': '#d0d0cc', 'titleColor': '#1e1e28', 'fontFamily': 'Geist, ui-sans-serif, system-ui, sans-serif', 'fontSize': '13px'}}}%%
 flowchart TB
     User(["User (Browser)"])
     Respondent(["Respondent (Browser)"])
@@ -46,3 +47,15 @@ flowchart TB
     Submit --> Instances2
     Form --> PDF
     Fill --> Drafts
+
+    classDef user      fill:#e8f4fe,stroke:#3b82f6,color:#1e1e28
+    classDef auth      fill:#f3eefe,stroke:#7c3aed,color:#1e1e28
+    classDef protected fill:#fef4ea,stroke:#d07935,color:#1e1e28
+    classDef public    fill:#e6f7ef,stroke:#3a9a68,color:#1e1e28
+    classDef persist   fill:#fef9e8,stroke:#ca9a2a,color:#1e1e28
+
+    class User,Respondent user
+    class Session auth
+    class Home,BUI,Config,Preview,Instances protected
+    class Form,Submit,PDF public
+    class Templates,Instances2,Drafts persist
