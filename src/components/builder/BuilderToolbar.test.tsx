@@ -12,17 +12,21 @@ import { BuilderToolbar } from './BuilderToolbar';
 function getProps(overrides: Partial<{
   title: string;
   hasUnsavedChanges: boolean;
+  isDraft: boolean;
   onTitleChange: (title: string) => void;
   onSettings: () => void;
   onPreview: () => void;
+  onSave: () => void;
   templateId: string;
 }> = {}) {
   return {
     title: 'My Form',
     hasUnsavedChanges: false,
+    isDraft: false,
     onTitleChange: vi.fn(),
     onSettings: vi.fn(),
     onPreview: vi.fn(),
+    onSave: vi.fn(),
     templateId: 'tmpl-abc',
     ...overrides,
   };
@@ -57,14 +61,19 @@ describe('BuilderToolbar', () => {
       expect(screen.getByDisplayValue('Feedback Survey')).toBeInTheDocument();
     });
 
-    it('shows "Saved" when hasUnsavedChanges is false', () => {
-      renderToolbar({ hasUnsavedChanges: false });
+    it('shows "Saved" when hasUnsavedChanges is false and not a draft', () => {
+      renderToolbar({ hasUnsavedChanges: false, isDraft: false });
       expect(screen.getByText('Saved')).toBeInTheDocument();
     });
 
     it('shows "Unsaved changes" when hasUnsavedChanges is true', () => {
-      renderToolbar({ hasUnsavedChanges: true });
+      renderToolbar({ hasUnsavedChanges: true, isDraft: false });
       expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+    });
+
+    it('shows "Draft" when isDraft is true', () => {
+      renderToolbar({ isDraft: true });
+      expect(screen.getByText('Draft')).toBeInTheDocument();
     });
 
     it('renders a Preview button', () => {
@@ -72,16 +81,41 @@ describe('BuilderToolbar', () => {
       expect(screen.getByRole('button', { name: /preview/i })).toBeInTheDocument();
     });
 
-    it('renders the "Open form" link pointing to /fill/<templateId>', () => {
-      renderToolbar({ templateId: 'tmpl-xyz' });
+    it('renders the "Open form" link pointing to /fill/<templateId> when not a draft', () => {
+      renderToolbar({ templateId: 'tmpl-xyz', isDraft: false });
       const link = screen.getByRole('link', { name: /open form/i });
       expect(link).toHaveAttribute('href', '/fill/tmpl-xyz');
     });
 
-    it('renders the "Open form" link with target _blank', () => {
-      renderToolbar({ templateId: 'tmpl-xyz' });
+    it('renders the "Open form" link with target _blank when not a draft', () => {
+      renderToolbar({ templateId: 'tmpl-xyz', isDraft: false });
       const link = screen.getByRole('link', { name: /open form/i });
       expect(link).toHaveAttribute('target', '_blank');
+    });
+
+    it('hides "Open form" when isDraft is true', () => {
+      renderToolbar({ isDraft: true });
+      expect(screen.queryByRole('link', { name: /open form/i })).not.toBeInTheDocument();
+    });
+
+    it('renders a Save button', () => {
+      renderToolbar();
+      expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
+    });
+
+    it('disables Save button when nothing to save', () => {
+      renderToolbar({ hasUnsavedChanges: false, isDraft: false });
+      expect(screen.getByRole('button', { name: /save/i })).toBeDisabled();
+    });
+
+    it('enables Save button when hasUnsavedChanges is true', () => {
+      renderToolbar({ hasUnsavedChanges: true, isDraft: false });
+      expect(screen.getByRole('button', { name: /save/i })).toBeEnabled();
+    });
+
+    it('enables Save button when isDraft is true', () => {
+      renderToolbar({ hasUnsavedChanges: false, isDraft: true });
+      expect(screen.getByRole('button', { name: /save/i })).toBeEnabled();
     });
 
     it('renders the title input with placeholder "Untitled form"', () => {
@@ -134,6 +168,13 @@ describe('BuilderToolbar', () => {
       renderToolbar({ onPreview });
       await user.click(screen.getByRole('button', { name: /preview/i }));
       expect(onPreview).toHaveBeenCalledOnce();
+    });
+
+    it('calls onSave when the Save button is clicked', async () => {
+      const onSave = vi.fn();
+      renderToolbar({ onSave, hasUnsavedChanges: true });
+      await user.click(screen.getByRole('button', { name: /save/i }));
+      expect(onSave).toHaveBeenCalledOnce();
     });
   });
 });
