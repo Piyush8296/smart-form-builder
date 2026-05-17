@@ -4,6 +4,7 @@ import type { FieldConfig, FieldKind } from '../types/fields';
 import { getPlugin } from '../registry';
 import { generateId } from '../utils/id';
 import { BuilderActionType } from '../enums';
+import { saveTemplate } from '../storage/templateStore';
 
 export function useBuilder() {
   const { state, dispatch } = useBuildContext();
@@ -41,6 +42,12 @@ export function useBuilder() {
     dispatch({ type: BuilderActionType.DUPLICATE_FIELD, payload: id });
   }, [dispatch]);
 
+  const saveForm = useCallback(() => {
+    const t = state.template.isDraft ? { ...state.template, isDraft: undefined } : state.template;
+    saveTemplate(t);
+    dispatch({ type: BuilderActionType.MARK_SAVED });
+  }, [state.template, dispatch]);
+
   return {
     template,
     fields: template.fields,
@@ -54,5 +61,6 @@ export function useBuilder() {
     moveField,
     selectField,
     duplicateField,
+    saveForm,
   };
 }
