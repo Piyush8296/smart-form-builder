@@ -1,52 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Brand } from '../components/ui/Brand';
 import { Button } from '../components/ui/Button';
 import { useSession } from '../contexts/SessionContext';
-import { lookupByEmail, createSession, restoreSession } from '../storage/authStore';
+import { useLogin } from '../hooks/useLogin';
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { session, setSession } = useSession();
-  const [email, setEmail] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [step, setStep] = useState<'email' | 'name'>('email');
-  const [error, setError] = useState('');
+  const { session } = useSession();
+  const { email, setEmail, displayName, setDisplayName, step, error, submitEmail, submitName, backToEmail } = useLogin();
 
   useEffect(() => {
     if (session) navigate('/', { replace: true });
   }, [session, navigate]);
-
-  function handleEmailSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = email.trim().toLowerCase();
-    if (!trimmed || !trimmed.includes('@')) {
-      setError('Enter a valid email address.');
-      return;
-    }
-    setError('');
-    const existing = lookupByEmail(trimmed);
-    if (existing) {
-      restoreSession(existing);
-      setSession(existing);
-      navigate('/', { replace: true });
-    } else {
-      setStep('name');
-    }
-  }
-
-  function handleNameSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const name = displayName.trim();
-    if (!name) {
-      setError('Enter your name.');
-      return;
-    }
-    setError('');
-    const s = createSession(email.trim().toLowerCase(), name);
-    setSession(s);
-    navigate('/', { replace: true });
-  }
 
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-4">
@@ -56,7 +22,7 @@ export default function LoginPage() {
         </div>
         <div className="bg-surface border border-border rounded-xl px-8 py-8">
           {step === 'email' ? (
-            <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
+            <form onSubmit={submitEmail} className="flex flex-col gap-4">
               <div>
                 <h1 className="text-title font-semibold m-0 mb-1">Sign in</h1>
                 <p className="text-muted text-sm m-0">Enter your email to continue</p>
@@ -80,7 +46,7 @@ export default function LoginPage() {
               </Button>
             </form>
           ) : (
-            <form onSubmit={handleNameSubmit} className="flex flex-col gap-4">
+            <form onSubmit={submitName} className="flex flex-col gap-4">
               <div>
                 <h1 className="text-title font-semibold m-0 mb-1">Create account</h1>
                 <p className="text-muted text-sm m-0">{email}</p>
@@ -105,7 +71,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 className="text-sm text-muted hover:text-ink transition-colors"
-                onClick={() => { setStep('email'); setError(''); }}
+                onClick={backToEmail}
               >
                 ← Back
               </button>

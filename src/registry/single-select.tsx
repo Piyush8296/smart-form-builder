@@ -1,3 +1,4 @@
+import { FieldKind, FieldGroup, SingleSelectVariant } from '../enums';
 import { useEffect, useRef } from 'react';
 import type { FieldPlugin } from '../types/registry';
 import type { SingleSelectConfig } from '../types/fields';
@@ -23,14 +24,14 @@ function parseOtherValue(v: string): string {
 }
 
 export const singleSelectPlugin: FieldPlugin<SingleSelectConfig> = {
-  kind: 'single-select',
+  kind: FieldKind.SINGLE_SELECT,
   displayName: 'Single select',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"/></svg>',
-  group: 'select',
+  group: FieldGroup.SELECT,
 
   createDefault: (id) => ({
     id,
-    kind: 'single-select',
+    kind: FieldKind.SINGLE_SELECT,
     label: 'Single select',
     conditions: [],
     defaultVisible: true,
@@ -39,7 +40,7 @@ export const singleSelectPlugin: FieldPlugin<SingleSelectConfig> = {
       { id: generateId(), label: 'Option 1' },
       { id: generateId(), label: 'Option 2' },
     ],
-    variant: 'radio',
+    variant: SingleSelectVariant.RADIO,
     allowOther: false,
     shuffleOptions: false,
   }),
@@ -53,7 +54,7 @@ export const singleSelectPlugin: FieldPlugin<SingleSelectConfig> = {
       <div>
         <label className="block text-caption font-medium text-ink-2 mb-1.5">Variant</label>
         <div className="grid grid-cols-2 gap-1.5">
-          {(['radio', 'dropdown', 'tiles', 'combobox'] as const).map((v) => (
+          {([SingleSelectVariant.RADIO, SingleSelectVariant.DROPDOWN, SingleSelectVariant.TILES, SingleSelectVariant.COMBOBOX]).map((v) => (
             <Button key={v} variant={config.variant === v ? 'primary' : 'secondary'} size="sm" onClick={() => onChange({ ...config, variant: v })}>
               {v.charAt(0).toUpperCase() + v.slice(1)}
             </Button>
@@ -74,7 +75,7 @@ export const singleSelectPlugin: FieldPlugin<SingleSelectConfig> = {
           + Add option
         </Button>
       </div>
-      {(config.variant === 'radio' || config.variant === 'tiles') && (
+      {(config.variant === SingleSelectVariant.RADIO || config.variant === SingleSelectVariant.TILES) && (
         <div>
           <label className="block text-caption font-medium text-ink-2 mb-1.5">Columns</label>
           <Select value={config.columns ?? 1} onChange={(e) => onChange({ ...config, columns: Number(e.target.value) as 1 | 2 | 3 })}>
@@ -100,7 +101,7 @@ export const singleSelectPlugin: FieldPlugin<SingleSelectConfig> = {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { shuffledRef.current = displayOptions; }, []); // only shuffle on mount
 
-    if (config.variant === 'dropdown') {
+    if (config.variant === SingleSelectVariant.DROPDOWN) {
       return (
         <Select value={isOther ? OTHER_OPTION_ID : strValue} onChange={(e) => onChange(e.target.value)} disabled={disabled}>
           <option value="">Choose…</option>
@@ -110,7 +111,7 @@ export const singleSelectPlugin: FieldPlugin<SingleSelectConfig> = {
       );
     }
 
-    if (config.variant === 'combobox') {
+    if (config.variant === SingleSelectVariant.COMBOBOX) {
       return (
         <Combobox
           value={isOther ? OTHER_OPTION_ID : strValue}
@@ -129,7 +130,7 @@ export const singleSelectPlugin: FieldPlugin<SingleSelectConfig> = {
           {shuffledRef.current.map((opt) => {
             const selected = isOther ? opt.id === OTHER_OPTION_ID : strValue === opt.id;
             return (
-              <label key={opt.id} className={`choice-row cursor-pointer${config.variant === 'tiles' ? ' border border-border rounded-md px-3 py-2 hover:bg-surface-2' : ''} ${selected ? 'data-[selected=true]:bg-surface-2' : ''}`} data-selected={selected}>
+              <label key={opt.id} className={`choice-row cursor-pointer${config.variant === SingleSelectVariant.TILES ? ' border border-border rounded-md px-3 py-2 hover:bg-surface-2' : ''} ${selected ? 'data-[selected=true]:bg-surface-2' : ''}`} data-selected={selected}>
                 <input
                   type="radio"
                   className="sr-only"

@@ -3,6 +3,7 @@ import { Toggle } from '../ui/Toggle';
 import { ConditionEditor } from './ConditionEditor';
 import { getPlugin } from '../../registry';
 import type { FieldConfig } from '../../types/fields';
+import { BuilderTab } from '../../enums';
 
 interface ConfigPanelProps {
   field: FieldConfig;
@@ -10,17 +11,15 @@ interface ConfigPanelProps {
   onChange: (field: FieldConfig) => void;
 }
 
-type Tab = 'Field' | 'Logic' | 'Validation';
-
 export function ConfigPanel({ field, allFields, onChange }: ConfigPanelProps) {
-  const [tab, setTab] = useState<Tab>('Field');
+  const [tab, setTab] = useState<BuilderTab>(BuilderTab.FIELD);
   const plugin = getPlugin(field.kind);
 
   return (
     <>
       <div className="sticky top-0 bg-surface border-b border-divider z-lifted">
         <div className="flex border-b border-divider px-3 gap-1">
-          {(['Field', 'Logic', 'Validation'] as Tab[]).map((t) => (
+          {Object.values(BuilderTab).map((t) => (
             <button
               key={t}
               className="px-2 py-2.5 text-caption text-muted border-b-2 border-transparent -mb-px cursor-pointer hover:text-ink data-[active=true]:text-ink data-[active=true]:border-ink data-[active=true]:font-medium"
@@ -34,7 +33,7 @@ export function ConfigPanel({ field, allFields, onChange }: ConfigPanelProps) {
       </div>
 
       <div className="px-4 py-4 overflow-y-auto">
-        {tab === 'Field' && (
+        {tab === BuilderTab.FIELD && (
           <>
             <div className="text-label font-semibold uppercase tracking-wider text-muted mb-3">
               {plugin.displayName} · {field.label || '(no label)'}
@@ -47,7 +46,7 @@ export function ConfigPanel({ field, allFields, onChange }: ConfigPanelProps) {
           </>
         )}
 
-        {tab === 'Logic' && (
+        {tab === BuilderTab.LOGIC && (
           <>
             <div className="text-label font-semibold uppercase tracking-wider text-muted mb-3">Conditions</div>
             <ConditionEditor
@@ -59,7 +58,7 @@ export function ConfigPanel({ field, allFields, onChange }: ConfigPanelProps) {
           </>
         )}
 
-        {tab === 'Validation' && (
+        {tab === BuilderTab.VALIDATION && (
           <>
             <div className="text-label font-semibold uppercase tracking-wider text-muted mb-3">Behavior</div>
             <Toggle

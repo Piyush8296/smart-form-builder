@@ -9,31 +9,20 @@ import { ProgressBar } from '../components/fill/ProgressBar';
 import { FillToolbar } from '../components/fill/FillToolbar';
 import { PostSubmitScreen } from '../components/fill/PostSubmitScreen';
 import { useStorage } from '../hooks/useStorage';
-import { getPlugin } from '../registry';
-
-const ICON_DOWNLOAD = (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M7 10l5 5 5-5" /><path d="M12 15V3" />
-  </svg>
-);
+import { ICON_DOWNLOAD } from '../constants/icons';
 
 function FillForm() {
-  const { template, visibleFields, visibilityMap, submitted, submitError, setAnswer, getAnswer, isVisible, getError, loadDraft, reset, submit } = useFill();
+  const {
+    template, visibleFields, visibilityMap, submitted, submitError,
+    setAnswer, getAnswer, isVisible, getError, loadDraft, reset, submit,
+    completedCount, interactiveFieldCount,
+  } = useFill();
   const { loadDraft: loadDraftFromStorage } = useStorage();
 
   useEffect(() => {
     const draft = loadDraftFromStorage(template.id);
     if (draft && draft.size > 0) loadDraft(draft);
   }, [template.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const interactiveFields = visibleFields.filter((f) => {
-    const p = getPlugin(f.kind);
-    return !p.isDisplayOnly && !p.isComputed;
-  });
-  const answeredCount = interactiveFields.filter((f) => {
-    const val = getAnswer(f.id);
-    return val !== null && val !== undefined && val !== '';
-  }).length;
 
   if (submitted) {
     return (
@@ -48,7 +37,7 @@ function FillForm() {
   return (
     <div className="max-w-content mx-auto px-5 pt-8 pb-20 w-full max-mob:px-4">
       {template.settings.showProgressBar && (
-        <ProgressBar answered={answeredCount} total={interactiveFields.length} />
+        <ProgressBar answered={completedCount} total={interactiveFieldCount} />
       )}
 
       <div className="border border-border border-t-4 border-t-ink bg-surface rounded-lg px-8 py-7 mb-4 max-mob:px-5 max-mob:py-5">
@@ -76,8 +65,8 @@ function FillForm() {
       })}
 
       <FillToolbar
-        answeredCount={answeredCount}
-        totalVisible={interactiveFields.length}
+        answeredCount={completedCount}
+        totalVisible={interactiveFieldCount}
         onSubmit={submit}
         submitError={submitError}
         hasDraft={template.settings.autoSaveDraft}

@@ -1,6 +1,9 @@
 import type { ComponentType } from 'react';
 import type { FieldConfig, FieldKind, FieldValue } from './fields';
 import type { FieldVisibilityState } from './conditions';
+import { FieldGroup } from '../enums';
+
+export { FieldGroup };
 
 export interface ConfigEditorProps<T extends FieldConfig> {
   config: T;
@@ -21,7 +24,7 @@ export interface FieldPlugin<T extends FieldConfig> {
   kind: FieldKind;
   displayName: string;
   icon: string;
-  group: 'input' | 'select' | 'display' | 'special';
+  group: FieldGroup;
 
   createDefault: (id: string) => T;
 

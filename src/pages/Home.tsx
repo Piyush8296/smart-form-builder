@@ -1,57 +1,16 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useRef, useState, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { Brand } from '../components/ui/Brand';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { useTemplateList } from '../hooks/useTemplateList';
+import { GridItemKind } from '../enums';
 import { useSession } from '../contexts/SessionContext';
+import { useHome } from '../hooks/useHome';
+import type { GridItem } from '../hooks/useHome';
 import type { TemplateSummary } from '../types/template';
-
-const ICON_SEARCH = (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
-  </svg>
-);
-const ICON_PLUS = (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 5v14M5 12h14" />
-  </svg>
-);
-const ICON_MORE = (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-    <circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" />
-  </svg>
-);
-const ICON_MENU = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <path d="M4 6h16M4 12h16M4 18h16" />
-  </svg>
-);
-
-const SWATCHES = [
-  'oklch(0.62 0.15 35)',
-  'oklch(0.5 0.12 240)',
-  'oklch(0.45 0.1 150)',
-  'oklch(0.4 0.08 280)',
-  'oklch(0.6 0.12 60)',
-  'oklch(0.55 0.13 200)',
-];
-
-const CARD_HEIGHT = 168;
-const GAP = 16;
-const ROW_HEIGHT = CARD_HEIGHT + GAP;
-
-function getColCount(): number {
-  if (typeof window === 'undefined') return 3;
-  if (window.innerWidth < 640) return 1;
-  if (window.innerWidth < 1024) return 2;
-  return 3;
-}
-
-type GridItem =
-  | { kind: 'new' }
-  | { kind: 'template'; template: TemplateSummary; index: number };
+import { ICON_SEARCH, ICON_PLUS, ICON_MORE, ICON_MENU } from '../constants/icons';
+import { SWATCHES, CARD_HEIGHT, GAP, ROW_HEIGHT } from '../constants/homeLayout';
 
 interface TemplateCardProps {
   template: TemplateSummary;
@@ -110,55 +69,24 @@ function NewFormCard({ onClick }: { onClick: () => void }) {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { templates, error, removeTemplate } = useTemplateList();
   const { session, logout } = useSession();
-  const [search, setSearch] = useState('');
-  const [colCount, setColCount] = useState(getColCount);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  useEffect(() => {
-    function update() { setColCount(getColCount()); }
-    window.addEventListener('resize', update, { passive: true });
-    return () => window.removeEventListener('resize', update);
-  }, []);
-
-  const filtered = useMemo(
-    () => templates.filter((t) => t.title.toLowerCase().includes(search.toLowerCase())),
-    [templates, search],
-  );
-
-  // Flat items: new-card first, then filtered templates
-  const items = useMemo<GridItem[]>(
-    () => [{ kind: 'new' }, ...filtered.map((t, i) => ({ kind: 'template' as const, template: t, index: i }))],
-    [filtered],
-  );
-
-  // Group items into rows of colCount
-  const rows = useMemo<GridItem[][]>(() => {
-    const result: GridItem[][] = [];
-    for (let i = 0; i < items.length; i += colCount) {
-      result.push(items.slice(i, i + colCount));
-    }
-    return result;
-  }, [items, colCount]);
+  const { templates, rows, colCount, search, setSearch, deleteId, error, handleNew, confirmDelete, cancelDelete, executeDelete } = useHome();
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
 
-  /* eslint-disable react-hooks/refs */
+  useLayoutEffect(() => {
+    if (containerRef.current) {
+      setScrollMargin(containerRef.current.offsetTop);
+    }
+  }, []);
+
   const rowVirtualizer = useWindowVirtualizer({
     count: rows.length,
     estimateSize: () => ROW_HEIGHT,
     overscan: 4,
-    scrollMargin: containerRef.current?.offsetTop ?? 0,
+    scrollMargin,
   });
-  /* eslint-enable react-hooks/refs */
-
-  function handleNew() { navigate('/builder/new'); }
-
-  function handleDelete(e: React.MouseEvent, id: string) {
-    e.stopPropagation();
-    setDeleteId(id);
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -213,7 +141,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Virtualized grid — only visible rows in DOM */}
           <div
             ref={containerRef}
             style={{ position: 'relative', height: rowVirtualizer.getTotalSize() }}
@@ -237,8 +164,8 @@ export default function Home() {
                     paddingBottom: GAP,
                   }}
                 >
-                  {row.map((item) => {
-                    if (item.kind === 'new') {
+                  {row.map((item: GridItem) => {
+                    if (item.kind === GridItemKind.NEW) {
                       return <NewFormCard key="new" onClick={handleNew} />;
                     }
                     return (
@@ -248,7 +175,7 @@ export default function Home() {
                         index={item.index}
                         onOpen={() => navigate(`/builder/${item.template.id}`)}
                         onViewResponses={(e) => { e.stopPropagation(); navigate(`/templates/${item.template.id}/instances`); }}
-                        onDelete={(e) => handleDelete(e, item.template.id)}
+                        onDelete={(e) => { e.stopPropagation(); confirmDelete(item.template.id); }}
                       />
                     );
                   })}
@@ -261,12 +188,12 @@ export default function Home() {
 
       <Modal
         open={deleteId !== null}
-        onClose={() => setDeleteId(null)}
+        onClose={cancelDelete}
         title="Delete form"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancel</Button>
-            <Button variant="danger-ghost" onClick={() => { if (deleteId) removeTemplate(deleteId); setDeleteId(null); }}>Delete</Button>
+            <Button variant="secondary" onClick={cancelDelete}>Cancel</Button>
+            <Button variant="danger-ghost" onClick={executeDelete}>Delete</Button>
           </>
         }
       >

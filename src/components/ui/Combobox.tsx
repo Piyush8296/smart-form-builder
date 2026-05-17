@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useId, type KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, useId, useMemo, type KeyboardEvent } from 'react';
 import { cn } from '../../utils/cn';
 
 export interface ComboboxOption {
@@ -15,21 +15,20 @@ interface ComboboxProps {
 }
 
 export function Combobox({ value, onChange, options, placeholder, className }: ComboboxProps) {
-  const selected = options.find((o) => o.id === value);
-  const [query, setQuery] = useState(selected?.label ?? '');
+  const selectedLabel = useMemo(() => options.find((o) => o.id === value)?.label ?? '', [value, options]);
+  const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
 
-  const filtered = query
+  // When the dropdown is closed the input shows the committed selection label.
+  // When open, it shows the live typed query so the user can filter.
+  const inputValue = open ? query : selectedLabel;
+
+  const filtered = open && query
     ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()))
     : options;
-
-  useEffect(() => {
-    const label = options.find((o) => o.id === value)?.label ?? '';
-    setQuery(label);
-  }, [value, options]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -49,7 +48,7 @@ export function Combobox({ value, onChange, options, placeholder, className }: C
     } else if (e.key === 'Enter' && activeIndex >= 0 && filtered[activeIndex]) {
       const opt = filtered[activeIndex];
       onChange(opt.id);
-      setQuery(opt.label);
+      setQuery('');
       setOpen(false);
     } else if (e.key === 'Escape') {
       setOpen(false);
@@ -60,10 +59,10 @@ export function Combobox({ value, onChange, options, placeholder, className }: C
     <div ref={containerRef} className={cn('relative', className)}>
       <input
         className="input"
-        value={query}
+        value={inputValue}
         placeholder={placeholder}
         onChange={(e) => { setQuery(e.target.value); setOpen(true); setActiveIndex(-1); }}
-        onFocus={() => setOpen(true)}
+        onFocus={() => { setQuery(''); setOpen(true); }}
         onKeyDown={handleKeyDown}
         role="combobox"
         aria-expanded={open}
@@ -91,7 +90,7 @@ export function Combobox({ value, onChange, options, placeholder, className }: C
               onMouseDown={(e) => {
                 e.preventDefault();
                 onChange(opt.id);
-                setQuery(opt.label);
+                setQuery('');
                 setOpen(false);
               }}
             >

@@ -1,23 +1,7 @@
 import type { Condition } from './conditions';
+import { FieldKind, SingleSelectVariant, CalculationOperation, SectionHeaderSize } from '../enums';
 
-export type FieldKind =
-  | 'text-single'
-  | 'text-multi'
-  | 'number'
-  | 'date'
-  | 'time'
-  | 'email'
-  | 'url'
-  | 'address'
-  | 'single-select'
-  | 'multi-select'
-  | 'file-upload'
-  | 'section-header'
-  | 'calculation'
-  | 'rating'
-  | 'linear-scale'
-  | 'phone'
-  | 'signature';
+export { FieldKind, SingleSelectVariant, CalculationOperation, SectionHeaderSize };
 
 export const OTHER_OPTION_ID = '__other__';
 
@@ -33,7 +17,7 @@ interface FieldBase {
 }
 
 export interface TextSingleConfig extends FieldBase {
-  kind: 'text-single';
+  kind: FieldKind.TEXT_SINGLE;
   placeholder?: string;
   defaultValue?: string;
   prefix?: string;
@@ -45,7 +29,7 @@ export interface TextSingleConfig extends FieldBase {
 }
 
 export interface TextMultiConfig extends FieldBase {
-  kind: 'text-multi';
+  kind: FieldKind.TEXT_MULTI;
   placeholder?: string;
   defaultValue?: string;
   rows?: number;
@@ -56,7 +40,7 @@ export interface TextMultiConfig extends FieldBase {
 }
 
 export interface NumberConfig extends FieldBase {
-  kind: 'number';
+  kind: FieldKind.NUMBER;
   placeholder?: string;
   defaultValue?: number;
   prefix?: string;
@@ -69,7 +53,7 @@ export interface NumberConfig extends FieldBase {
 }
 
 export interface DateConfig extends FieldBase {
-  kind: 'date';
+  kind: FieldKind.DATE;
   prefillToday: boolean;
   minDate?: string;
   maxDate?: string;
@@ -78,26 +62,26 @@ export interface DateConfig extends FieldBase {
 }
 
 export interface TimeConfig extends FieldBase {
-  kind: 'time';
+  kind: FieldKind.TIME;
   minTime?: string;
   maxTime?: string;
   validationMessage?: string;
 }
 
 export interface EmailConfig extends FieldBase {
-  kind: 'email';
+  kind: FieldKind.EMAIL;
   placeholder?: string;
   validationMessage?: string;
 }
 
 export interface UrlConfig extends FieldBase {
-  kind: 'url';
+  kind: FieldKind.URL;
   placeholder?: string;
   validationMessage?: string;
 }
 
 export interface AddressConfig extends FieldBase {
-  kind: 'address';
+  kind: FieldKind.ADDRESS;
   includeStreet2: boolean;
   includeState: boolean;
   includeZip: boolean;
@@ -110,10 +94,9 @@ export interface SelectOption {
   label: string;
 }
 
-export type SingleSelectVariant = 'radio' | 'dropdown' | 'tiles' | 'combobox';
 
 export interface SingleSelectConfig extends FieldBase {
-  kind: 'single-select';
+  kind: FieldKind.SINGLE_SELECT;
   options: SelectOption[];
   variant: SingleSelectVariant;
   allowOther: boolean;
@@ -123,7 +106,7 @@ export interface SingleSelectConfig extends FieldBase {
 }
 
 export interface MultiSelectConfig extends FieldBase {
-  kind: 'multi-select';
+  kind: FieldKind.MULTI_SELECT;
   options: SelectOption[];
   minSelections: number | null;
   maxSelections: number | null;
@@ -135,7 +118,7 @@ export interface MultiSelectConfig extends FieldBase {
 }
 
 export interface FileUploadConfig extends FieldBase {
-  kind: 'file-upload';
+  kind: FieldKind.FILE_UPLOAD;
   allowedTypes: string[];
   maxFiles: number;
   maxFileSizeMB?: number;
@@ -143,15 +126,14 @@ export interface FileUploadConfig extends FieldBase {
 }
 
 export interface SectionHeaderConfig extends FieldBase {
-  kind: 'section-header';
-  size: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  kind: FieldKind.SECTION_HEADER;
+  size: SectionHeaderSize;
   showDivider?: boolean;
 }
 
-export type CalculationOperation = 'sum' | 'avg' | 'min' | 'max';
 
 export interface CalculationConfig extends FieldBase {
-  kind: 'calculation';
+  kind: FieldKind.CALCULATION;
   operation: CalculationOperation;
   sourceFieldIds: string[];
   prefix?: string;
@@ -160,7 +142,7 @@ export interface CalculationConfig extends FieldBase {
 }
 
 export interface RatingConfig extends FieldBase {
-  kind: 'rating';
+  kind: FieldKind.RATING;
   maxRating: 5 | 10;
   lowLabel?: string;
   highLabel?: string;
@@ -168,7 +150,7 @@ export interface RatingConfig extends FieldBase {
 }
 
 export interface LinearScaleConfig extends FieldBase {
-  kind: 'linear-scale';
+  kind: FieldKind.LINEAR_SCALE;
   minValue: 0 | 1;
   maxValue: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
   minLabel?: string;
@@ -177,13 +159,13 @@ export interface LinearScaleConfig extends FieldBase {
 }
 
 export interface PhoneConfig extends FieldBase {
-  kind: 'phone';
+  kind: FieldKind.PHONE;
   defaultCountryCode?: string;
   validationMessage?: string;
 }
 
 export interface SignatureConfig extends FieldBase {
-  kind: 'signature';
+  kind: FieldKind.SIGNATURE;
   validationMessage?: string;
 }
 

@@ -12,17 +12,13 @@ import { ConfigPanel } from '../components/builder/ConfigPanel';
 import { TemplateSettingsModal } from '../components/builder/TemplateSettingsModal';
 import { BuilderToolbar } from '../components/builder/BuilderToolbar';
 import { Button } from '../components/ui/Button';
-import type { FieldKind } from '../types/fields';
-
-const ICON_PLUS = (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 5v14M5 12h14" />
-  </svg>
-);
+import { FieldKind } from '../types/fields';
+import { BuilderActionType } from '../enums';
+import { ICON_PLUS } from '../constants/icons';
 
 function BuilderInner() {
   const {
-    template, fields, selectedFieldId, selectedField, isDirty,
+    template, fields, selectedFieldId, selectedField, hasUnsavedChanges,
     addField, removeField, updateField, moveField, selectField, duplicateField,
     dispatch,
   } = useBuilder();
@@ -34,8 +30,8 @@ function BuilderInner() {
     <div className="h-screen flex flex-col overflow-hidden">
       <BuilderToolbar
         title={template.title}
-        isDirty={isDirty}
-        onTitleChange={(title) => dispatch({ type: 'SET_TITLE', payload: title })}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onTitleChange={(title) => dispatch({ type: BuilderActionType.SET_TITLE, payload: title })}
         onSettings={() => setSettingsOpen(true)}
         onPreview={() => window.open(`/fill/${template.id}`, '_blank')}
         templateId={template.id}
@@ -73,7 +69,7 @@ function BuilderInner() {
             {fields.length === 0 ? (
               <div className="text-center py-16 text-muted">
                 <p className="mb-3">No fields yet.</p>
-                <Button variant="secondary" onClick={() => addField('text-single')}>
+                <Button variant="secondary" onClick={() => addField(FieldKind.TEXT_SINGLE)}>
                   {ICON_PLUS} Add your first field
                 </Button>
               </div>
@@ -91,7 +87,7 @@ function BuilderInner() {
 
             <button
               className="flex items-center justify-center gap-2 p-3 border border-dashed border-border-strong rounded-lg mt-3.5 text-muted text-ui cursor-pointer w-full transition-colors hover:border-ink hover:text-ink hover:bg-surface"
-              onClick={() => addField('text-single')}
+              onClick={() => addField(FieldKind.TEXT_SINGLE)}
             >
               {ICON_PLUS} Add field
             </button>
@@ -120,7 +116,7 @@ function BuilderInner() {
         open={settingsOpen}
         settings={template.settings}
         onClose={() => setSettingsOpen(false)}
-        onChange={(patch) => dispatch({ type: 'UPDATE_SETTINGS', payload: patch })}
+        onChange={(patch) => dispatch({ type: BuilderActionType.UPDATE_SETTINGS, payload: patch })}
       />
     </div>
   );
@@ -145,13 +141,14 @@ export default function BuilderPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (isNew) return null;
-
   // SAFETY: session is non-null (AuthGuard); id is defined and non-'new' (isNew guard above returns early).
-  if (!isOwner(session!.userId, id!)) {
-    navigate(`/fill/${id}`, { replace: true });
-    return null;
-  }
+  const notOwner = !isNew && !isOwner(session!.userId, id!);
+  useEffect(() => {
+    if (notOwner) navigate(`/fill/${id}`, { replace: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notOwner]);
+
+  if (isNew || notOwner) return null;
 
   const template = loadTemplate(id!);
   if (!template) {

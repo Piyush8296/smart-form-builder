@@ -1,16 +1,17 @@
+import { FieldKind, FieldGroup } from '../enums';
 import type { FieldPlugin } from '../types/registry';
 import type { NumberConfig } from '../types/fields';
 import { Input } from '../components/ui/Input';
 
 export const numberPlugin: FieldPlugin<NumberConfig> = {
-  kind: 'number',
+  kind: FieldKind.NUMBER,
   displayName: 'Number',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg>',
-  group: 'input',
+  group: FieldGroup.INPUT,
 
   createDefault: (id) => ({
     id,
-    kind: 'number',
+    kind: FieldKind.NUMBER,
     label: 'Number',
     conditions: [],
     defaultVisible: true,

@@ -1,3 +1,4 @@
+import { FieldKind, FieldGroup } from '../enums';
 import type { FieldPlugin } from '../types/registry';
 import type { EmailConfig } from '../types/fields';
 import { Input } from '../components/ui/Input';
@@ -5,14 +6,14 @@ import { Input } from '../components/ui/Input';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const emailPlugin: FieldPlugin<EmailConfig> = {
-  kind: 'email',
+  kind: FieldKind.EMAIL,
   displayName: 'Email',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>',
-  group: 'input',
+  group: FieldGroup.INPUT,
 
   createDefault: (id) => ({
     id,
-    kind: 'email',
+    kind: FieldKind.EMAIL,
     label: 'Email',
     conditions: [],
     defaultVisible: true,

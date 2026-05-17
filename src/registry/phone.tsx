@@ -1,3 +1,4 @@
+import { FieldKind, FieldGroup } from '../enums';
 import type { FieldPlugin } from '../types/registry';
 import type { PhoneConfig } from '../types/fields';
 import { Input } from '../components/ui/Input';
@@ -64,14 +65,14 @@ function parsePhone(value: string): { code: string; number: string } {
 }
 
 export const phonePlugin: FieldPlugin<PhoneConfig> = {
-  kind: 'phone',
+  kind: FieldKind.PHONE,
   displayName: 'Phone',
   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1l-1.3 1.3a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></svg>',
-  group: 'input',
+  group: FieldGroup.INPUT,
 
   createDefault: (id) => ({
     id,
-    kind: 'phone',
+    kind: FieldKind.PHONE,
     label: 'Phone',
     conditions: [],
     defaultVisible: true,
