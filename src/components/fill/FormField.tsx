@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { getPlugin } from '../../registry';
 import type { FieldConfig, FieldValue } from '../../types/fields';
 import type { FieldVisibilityState } from '../../types/conditions';
@@ -11,7 +12,14 @@ interface FormFieldProps {
   disabled?: boolean;
 }
 
-export function FormField({ field, value, onChange, error, visibilityState, disabled = false }: FormFieldProps) {
+export const FormField = memo(function FormField({
+  field,
+  value,
+  onChange,
+  error,
+  visibilityState,
+  disabled = false,
+}: FormFieldProps) {
   const plugin = getPlugin(field.kind);
 
   return (
@@ -40,4 +48,4 @@ export function FormField({ field, value, onChange, error, visibilityState, disa
       />
     </div>
   );
-}
+});

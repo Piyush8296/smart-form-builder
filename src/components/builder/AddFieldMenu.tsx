@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { getAllPlugins } from '../../registry';
 import { FieldGroup } from '../../enums';
 import type { FieldKind } from '../../types/fields';
@@ -8,7 +9,7 @@ interface AddFieldMenuProps {
   onAdd: (kind: FieldKind) => void;
 }
 
-export function AddFieldMenu({ onAdd }: AddFieldMenuProps) {
+export const AddFieldMenu = memo(function AddFieldMenu({ onAdd }: AddFieldMenuProps) {
   const plugins = getAllPlugins();
   const groups = Array.from(
     plugins.reduce((map, p) => {
@@ -50,4 +51,4 @@ export function AddFieldMenu({ onAdd }: AddFieldMenuProps) {
       </div>
     </>
   );
-}
+});

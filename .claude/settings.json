@@ -177,5 +177,6 @@
   "attribution": {
     "commit": "Co-Authored-By: Claude <noreply@anthropic.com>",
     "pr": "Generated with [Claude Code](https://claude.ai/code)"
-  }
+  },
+  "claudeMdExcludes": ["**/*.prompt.md"]
 }

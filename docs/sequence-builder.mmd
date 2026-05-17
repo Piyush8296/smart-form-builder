@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant U as User (Builder)
+    participant BR as builderReducer
+    participant TS as templateStore
+    participant React as React (memo)
+
+    U->>BR: ADD_FIELD / MOVE / DELETE
+    BR-->>React: new fields[]
+    React-->>U: re-render FieldList
+
+    U->>BR: UPDATE_CONFIG {fieldId, patch}
+    BR-->>React: updated field config
+    React-->>U: re-render ConfigPanel
+
+    U->>BR: ADD_CONDITION / REMOVE_CONDITION
+    BR-->>React: updated conditions[]
+    React-->>U: re-render ConditionEditor
+
+    BR->>TS: autoSave (debounced 500ms)
+    TS-->>BR: persisted to localStorage

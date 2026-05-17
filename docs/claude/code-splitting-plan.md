@@ -30,21 +30,45 @@ build: {
 ```
 
 ### `src/router.tsx` (new)
-Export both `routes` (for tests) and `router` (for production):
+Export both `routes` (for tests) and `router` (for production).
+
+5 lazy pages: Home, BuilderPage, FillPage, InstancesPage, LoginPage.
+
+`AuthGuard` implemented as a nested **layout route** — not a JSX wrapper. Public routes (`/login`, `/fill/:templateId`) sit at top level; all builder routes are children of the AuthGuard layout route.
+
+Suspense fallback renders `<Brand nameHidden noLink />` centred on `--bg` background (not a plain `<div>Loading...</div>`).
+
 ```tsx
 import { createBrowserRouter, type RouteObject } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
+import { Brand } from './components/ui/Brand'
+import { AuthGuard } from './components/ui/AuthGuard'
 
-const Home = lazy(() => import('./pages/Home'))
+const Home        = lazy(() => import('./pages/Home'))
+const BuilderPage = lazy(() => import('./pages/BuilderPage'))
+const FillPage    = lazy(() => import('./pages/FillPage'))
+const InstancesPage = lazy(() => import('./pages/InstancesPage'))
+const LoginPage   = lazy(() => import('./pages/LoginPage'))
+
+function SuspenseFallback() {
+  return (
+    <div className="min-h-screen bg-bg grid place-items-center">
+      <Brand nameHidden noLink />
+    </div>
+  )
+}
 
 export const routes: RouteObject[] = [
+  { path: '/login',           element: <Suspense fallback={<SuspenseFallback />}><LoginPage /></Suspense> },
+  { path: '/fill/:templateId',element: <Suspense fallback={<SuspenseFallback />}><FillPage /></Suspense> },
   {
-    path: '/',
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Home />
-      </Suspense>
-    ),
+    element: <AuthGuard />,
+    children: [
+      { path: '/',                        element: <Suspense fallback={<SuspenseFallback />}><Home /></Suspense> },
+      { path: '/builder/new',             element: <Suspense fallback={<SuspenseFallback />}><BuilderPage /></Suspense> },
+      { path: '/builder/:id',             element: <Suspense fallback={<SuspenseFallback />}><BuilderPage /></Suspense> },
+      { path: '/templates/:id/instances', element: <Suspense fallback={<SuspenseFallback />}><InstancesPage /></Suspense> },
+    ],
   },
 ]
 
@@ -111,14 +135,17 @@ describe('Home', () => {
 |------|--------|
 | `package.json` | add react-router-dom |
 | `vite.config.ts` | add manualChunks |
-| `src/router.tsx` | create |
+| `src/router.tsx` | create (5 lazy pages + nested AuthGuard layout) |
 | `src/App.tsx` | replace with RouterProvider |
 | `src/App.test.tsx` | update for lazy route (findBy not getBy) |
 | `src/pages/Home.tsx` | create |
 | `src/pages/Home.test.tsx` | create |
+| `src/pages/LoginPage.tsx` | create |
+| `src/components/ui/AuthGuard.tsx` | create (layout route, not JSX wrapper) |
+| `src/components/ui/Brand.tsx` | create (used by SuspenseFallback) |
 
 ## Verification
 1. `npm install` — react-router-dom added
 2. `npm run test:run` — all tests pass
-3. `npm run build` — dist/ has separate `vendor`, `router`, `Home` chunks
-4. `npm run dev` — navigate to `/`, heading renders
+3. `npm run build` — dist/ has separate `vendor`, `router`, page chunks
+4. `npm run dev` — navigate to `/`, redirects to `/login` when no session

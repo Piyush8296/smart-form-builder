@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 import { Brand } from '../components/ui/Brand';
 import { Button } from '../components/ui/Button';
 import { FillProvider } from '../contexts/FillContext';
@@ -49,20 +50,22 @@ function FillForm() {
         )}
       </div>
 
-      {visibleFields.map((field) => {
-        if (!isVisible(field.id)) return null;
-        const vState = visibilityMap.get(field.id) ?? { fieldId: field.id, visible: true, required: field.defaultRequired };
-        return (
-          <FormField
-            key={field.id}
-            field={field}
-            value={getAnswer(field.id)}
-            onChange={(value) => setAnswer(field.id, value)}
-            error={getError(field.id)}
-            visibilityState={vState}
-          />
-        );
-      })}
+      <ErrorBoundary>
+        {visibleFields.map((field) => {
+          if (!isVisible(field.id)) return null;
+          const vState = visibilityMap.get(field.id) ?? { fieldId: field.id, visible: true, required: field.defaultRequired };
+          return (
+            <FormField
+              key={field.id}
+              field={field}
+              value={getAnswer(field.id)}
+              onChange={(value) => setAnswer(field.id, value)}
+              error={getError(field.id)}
+              visibilityState={vState}
+            />
+          );
+        })}
+      </ErrorBoundary>
 
       <FillToolbar
         answeredCount={completedCount}
@@ -115,8 +118,10 @@ export default function FillPage() {
   }
 
   return (
-    <FillProvider template={template}>
-      <FillPageInner />
-    </FillProvider>
+    <ErrorBoundary>
+      <FillProvider template={template}>
+        <FillPageInner />
+      </FillProvider>
+    </ErrorBoundary>
   );
 }

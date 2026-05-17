@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 import { BuilderProvider } from '../contexts/BuilderContext';
 import { useBuilder } from '../hooks/useBuilder';
 import { useStorage } from '../hooks/useStorage';
@@ -74,15 +75,17 @@ function BuilderInner() {
                 </Button>
               </div>
             ) : (
-              <FieldList
-                fields={fields}
-                selectedFieldId={selectedFieldId}
-                onSelect={selectField}
-                onDuplicate={duplicateField}
-                onDelete={removeField}
-                onToggleRequired={(field) => updateField({ ...field, defaultRequired: !field.defaultRequired })}
-                onMove={moveField}
-              />
+              <ErrorBoundary>
+                <FieldList
+                  fields={fields}
+                  selectedFieldId={selectedFieldId}
+                  onSelect={selectField}
+                  onDuplicate={duplicateField}
+                  onDelete={removeField}
+                  onToggleRequired={(field) => updateField({ ...field, defaultRequired: !field.defaultRequired })}
+                  onMove={moveField}
+                />
+              </ErrorBoundary>
             )}
 
             <button
@@ -99,11 +102,13 @@ function BuilderInner() {
           data-mobile-open={mobileRight || undefined}
         >
           {selectedField ? (
-            <ConfigPanel
-              field={selectedField}
-              allFields={fields}
-              onChange={updateField}
-            />
+            <ErrorBoundary>
+              <ConfigPanel
+                field={selectedField}
+                allFields={fields}
+                onChange={updateField}
+              />
+            </ErrorBoundary>
           ) : (
             <div className="px-4 py-8 text-center text-muted text-caption">
               Select a field to edit its settings.
@@ -161,8 +166,10 @@ export default function BuilderPage() {
   }
 
   return (
-    <BuilderProvider template={template}>
-      <BuilderInner />
-    </BuilderProvider>
+    <ErrorBoundary>
+      <BuilderProvider template={template}>
+        <BuilderInner />
+      </BuilderProvider>
+    </ErrorBoundary>
   );
 }

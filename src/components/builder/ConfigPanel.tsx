@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Toggle } from '../ui/Toggle';
 import { ConditionEditor } from './ConditionEditor';
 import { getPlugin } from '../../registry';
@@ -11,7 +11,7 @@ interface ConfigPanelProps {
   onChange: (field: FieldConfig) => void;
 }
 
-export function ConfigPanel({ field, allFields, onChange }: ConfigPanelProps) {
+export const ConfigPanel = memo(function ConfigPanel({ field, allFields, onChange }: ConfigPanelProps) {
   const [tab, setTab] = useState<BuilderTab>(BuilderTab.FIELD);
   const plugin = getPlugin(field.kind);
 
@@ -78,4 +78,4 @@ export function ConfigPanel({ field, allFields, onChange }: ConfigPanelProps) {
       </div>
     </>
   );
-}
+});

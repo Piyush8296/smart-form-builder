@@ -51,7 +51,7 @@ Brand logo → non-clickable wordmark
 ```typescript
 // fb:session
 interface Session {
-  userId: string;      // nanoid(), generated once per user
+  userId: string;      // crypto.randomUUID(), generated once per user
   email: string;
   displayName: string;
   createdAt: string;
@@ -119,6 +119,7 @@ fb:user-templates:{userId}    → string[]           (owned template IDs)
 fb:templates                  → TemplateSummary[]  (backward-compat index)
 fb:template:{id}              → Template
 fb:instances:{tid}            → Instance[]
+fb:instance:{id}              → Instance           (individual instance lookup)
 fb:draft:{tid}                → serialized Map
 ```
 
@@ -130,7 +131,7 @@ fb:draft:{tid}                → serialized Map
 2. `src/pages/LoginPage.tsx` — email + name form, no password
 3. `src/contexts/SessionContext.tsx` — provides `userId`, `email`, `displayName`, `logout()`
 4. `src/components/ui/AuthGuard.tsx` — checks session, redirects to `/login` if missing
-5. Router update — wrap `/`, `/builder/*`, `/templates/*` in `<AuthGuard>`; `/fill/*` + `/login` public
+5. Router update — `AuthGuard` as nested layout route: `{ element: <AuthGuard />, children: [...protected routes] }`; `/fill/:templateId` + `/login` remain at top level (public)
 6. `src/storage/accessStore.ts` — `isOwner(userId, templateId)`, `addOwnership`, `removeOwnership`
 7. `src/hooks/useTemplateList.ts` — `createTemplate` calls `addOwnership(userId, id)`
 8. `src/pages/BuilderPage.tsx` — ownership check using `userId` from session

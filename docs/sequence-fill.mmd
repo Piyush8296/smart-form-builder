@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant U as User (Respondent)
+    participant FR as fillReducer
+    participant CE as conditionEvaluator
+    participant CA as calculationEngine
+    participant React as React (memo)
+
+    U->>FR: SET_ANSWER {fieldId, value}
+    FR->>CE: evaluateAllFields(fields, answers)
+    CE-->>FR: visibilityMap
+    FR->>CA: applyCalculations(fields, answers, visibilityMap)
+    CA-->>FR: updated answers (computed fields)
+    FR-->>React: new state
+    React-->>U: re-render affected fields only

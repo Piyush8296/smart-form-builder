@@ -60,6 +60,15 @@ export enum ConditionOperator {
   LESS_THAN = 'less_than',
   IS_EMPTY = 'is_empty',
   IS_NOT_EMPTY = 'is_not_empty',
+  // Date operators
+  IS_BEFORE = 'is_before',
+  IS_AFTER = 'is_after',
+  // Number range
+  IS_WITHIN_RANGE = 'is_within_range',
+  // Multi-select operators
+  CONTAINS_ANY_OF = 'contains_any_of',
+  CONTAINS_ALL_OF = 'contains_all_of',
+  CONTAINS_NONE_OF = 'contains_none_of',
 }
 
 export enum ConditionEffect {

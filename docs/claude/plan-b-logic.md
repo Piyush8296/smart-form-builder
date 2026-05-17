@@ -18,35 +18,60 @@ Defined here; Phase A shells have no prop types until this phase wires them.
 
 ---
 
-## B1. `src/types/` — 6 new files
+## B1. `src/enums/index.ts` — new file
+
+All TypeScript enums extracted into one file (not inline in type files):
+
+- `FieldKind` — 17 values: `TEXT_SINGLE`, `TEXT_MULTI`, `NUMBER`, `DATE`, `TIME`, `EMAIL`, `URL`, `ADDRESS`, `SINGLE_SELECT`, `MULTI_SELECT`, `FILE_UPLOAD`, `SECTION_HEADER`, `CALCULATION`, `RATING`, `LINEAR_SCALE`, `PHONE`, `SIGNATURE`
+- `BuilderActionType` — `ADD_FIELD`, `REMOVE_FIELD`, `UPDATE_FIELD`, `MOVE_FIELD`, `SELECT_FIELD`, `DUPLICATE_FIELD`, `UPDATE_SETTINGS`, `SET_TITLE`, `MARK_SAVED`
+- `FillActionType` — `SET_ANSWER`, `SET_ERRORS`, `SET_SUBMIT_ERROR`, `MARK_SUBMITTED`, `RESET`, `LOAD_DRAFT`
+- `ConditionOperator` — `EQUALS`, `NOT_EQUALS`, `CONTAINS`, `GREATER_THAN`, `LESS_THAN`, `IS_EMPTY`, `IS_NOT_EMPTY`
+- `ConditionEffect` — `SHOW`, `HIDE`, `REQUIRE`, `UNREQUIRE`
+- `CalculationOperation` — `SUM`, `AVG`, `MIN`, `MAX`
+- `SingleSelectVariant` — `RADIO`, `DROPDOWN`, `TILES`, `COMBOBOX`
+- `SectionHeaderSize` — `XS`, `SM`, `MD`, `LG`, `XL`
+- `FieldGroup` — `INPUT`, `SELECT`, `DISPLAY`, `SPECIAL`
+- `BuilderTab` — `FIELD`, `LOGIC`, `VALIDATION`
+
+---
+
+## B2. `src/types/` — 6 new files
 
 **`fields.ts`**
-```typescript
-export type FieldKind =
-  | 'text-single' | 'text-multi' | 'number' | 'date' | 'time'
-  | 'single-select' | 'multi-select' | 'file-upload'
-  | 'section-header' | 'calculation'
-  | 'rating' | 'linear-scale' | 'phone' | 'signature';
 
+Imports and re-exports `FieldKind`, `SingleSelectVariant`, `CalculationOperation`, `SectionHeaderSize` from `src/enums`.
+
+17 config interfaces (original 14 + `EmailConfig`, `UrlConfig`, `AddressConfig`).
+
+```typescript
 export const OTHER_OPTION_ID = '__other__';
 
 interface FieldBase {
   id: string; kind: FieldKind; label: string; description?: string;
   conditions: Condition[]; defaultVisible: boolean; defaultRequired: boolean;
+  requiredMessage?: string;
 }
-// + all 14 *Config interfaces (see plan.md for full definitions)
+
+// + all 17 *Config interfaces
 export type FieldConfig = TextSingleConfig | TextMultiConfig | NumberConfig | DateConfig
-  | TimeConfig | SingleSelectConfig | MultiSelectConfig | FileUploadConfig
+  | TimeConfig | EmailConfig | UrlConfig | AddressConfig
+  | SingleSelectConfig | MultiSelectConfig | FileUploadConfig
   | SectionHeaderConfig | CalculationConfig | RatingConfig | LinearScaleConfig
   | PhoneConfig | SignatureConfig;
 
+export interface AddressValue {
+  street1: string; street2?: string; city: string;
+  state?: string; zip?: string; country: string;
+}
+export type SignatureValue = { base64: string; width: number; height: number };
+
 export type FieldValue =
   | string | number | string[] | boolean
-  | { base64: string; width: number; height: number }
+  | SignatureValue | AddressValue
   | null;
 ```
 
-**`conditions.ts`** — `ConditionOperator`, `Condition`, `ConditionEffect`, `FieldVisibilityState`  
+**`conditions.ts`** — `Condition`, `FieldVisibilityState`; imports `ConditionOperator`, `ConditionEffect` from enums  
 **`template.ts`** — `TemplateSettings` (5 fields), `DEFAULT_TEMPLATE_SETTINGS`, `Template`, `TemplateSummary`  
 **`instance.ts`** — `FieldAnswer`, `Instance` (snapshots full field configs at submit time), `InstanceSummary`  
 **`registry.ts`** — `FieldPlugin<T>`, `ConfigEditorProps<T>`, `FieldRendererProps<T>`  
@@ -54,7 +79,7 @@ export type FieldValue =
 
 ---
 
-## B2. `src/utils/id.ts` + `src/utils/pdf.ts`
+## B3. `src/utils/id.ts` + `src/utils/pdf.ts` + `src/utils/formState.ts`
 
 **`id.ts`**
 ```typescript
@@ -82,9 +107,19 @@ export async function exportToPDF(
 }
 ```
 
+**`formState.ts`**
+```typescript
+export function buildInitialAnswers(fields: FieldConfig[]): Map<string, FieldValue>
+export function recomputeState(
+  fields: FieldConfig[],
+  rawAnswers: Map<string, FieldValue>,
+): { answers: Map<string, FieldValue>; visibilityMap: Map<string, FieldVisibilityState> }
+```
+`recomputeState` runs `evaluateAllFields()` then recomputes all calculation fields using the updated visibility map. Called on every `SET_ANSWER` dispatch. Extracted so both `fillReducer` and `FillProvider` can share the logic without duplicating it.
+
 ---
 
-## B3. `src/storage/` — 3 new files
+## B4. `src/storage/` — 5 files
 
 **`keys.ts`**
 ```typescript
@@ -92,6 +127,10 @@ export const TEMPLATES_KEY = 'fb:templates';
 export const templateKey = (id: string) => `fb:template:${id}`;
 export const instancesKey = (tid: string) => `fb:instances:${tid}`;
 export const instanceKey = (id: string) => `fb:instance:${id}`;
+export const draftKey = (tid: string) => `fb:draft:${tid}`;
+export const SESSION_KEY = 'fb:session';
+export const USERS_KEY = 'fb:users';
+export const userTemplatesKey = (userId: string) => `fb:user-templates:${userId}`;
 ```
 
 **`templateStore.ts`** — `listTemplates()`, `getTemplate(id)`, `saveTemplate(t)`, `deleteTemplate(id)`
@@ -99,12 +138,12 @@ export const instanceKey = (id: string) => `fb:instance:${id}`;
 - `QuotaExceededError` → re-throw with user-friendly message
 - Corrupted JSON → `console.warn` + return empty state
 
-**`instanceStore.ts`** — `listInstances(tid)`, `getInstance(id)`, `saveInstance(i)`, `deleteInstance(id)`, `saveDraft(instance)`, `getDraft(tid)`, `clearDraft(tid)`
-- Draft key: `fb:draft:{templateId}`
+**`instanceStore.ts`** — `listInstances(tid)`, `getInstance(id)`, `saveInstance(i)`, `deleteInstance(id)`, `saveDraft(tid, answers)`, `getDraft(tid)`, `clearDraft(tid)`
+- `saveDraft` accepts `(templateId, answers: Map<string, FieldValue>)` — serialises Map to object before storing
 
 ---
 
-## B4. `src/logic/` — 3 new files
+## B5. `src/logic/` — 3 new files
 
 **`conditionEvaluator.ts`**
 ```typescript
@@ -139,7 +178,7 @@ export function evaluateAllFields(
 
 ---
 
-## B5. `src/registry/` — 15 new files
+## B6. `src/registry/` — 18 new files
 
 **`index.ts`**
 ```typescript
@@ -147,10 +186,10 @@ const REGISTRY = new Map<FieldKind, FieldPlugin<FieldConfig>>();
 export function registerField<T extends FieldConfig>(plugin: FieldPlugin<T>): void
 export function getPlugin(kind: FieldKind): FieldPlugin<FieldConfig>
 export function getAllPlugins(): FieldPlugin<FieldConfig>[]
-// imports + registers all 14 plugins at bottom of file
+// imports + registers all 17 plugins at bottom of file
 ```
 
-**14 plugin files** — each exports `FieldPlugin<T>` with:
+**17 plugin files** — each exports `FieldPlugin<T>` with:
 - `kind`, `displayName`, `icon` (SVG string), `group`
 - `createDefault(id)` → T with sensible defaults
 - `ConfigEditor: ComponentType<ConfigEditorProps<T>>` — builder config UI
@@ -170,67 +209,88 @@ Plugin-specific notes:
 - **phone**: country code select (E.164 prefix list ~50 entries); combined value `"${code}${number}"`
 - **rating**: `maxRating: 5 | 10`; star buttons, hover highlights up to hovered; value = selected count
 - **linear-scale**: `minValue: 0 | 1`, `maxValue: 2–10`; numbered buttons; `minLabel`/`maxLabel` below endpoints
+- **email**: validates RFC-ish email pattern; plain `<input type="email">`
+- **url**: validates URL with `new URL()` try/catch; plain `<input type="url">`
+- **address**: composite field — street1, street2 (optional), city, state (optional), zip (optional), country; value type is `AddressValue` object; individual sub-fields toggled by `includeStreet2`, `includeState`, `includeZip`
 
 ---
 
-## B6. `src/contexts/` — 2 new files
+## B7. `src/state/` — 2 new files
 
-**`BuilderContext.tsx`**
+Reducer logic extracted from contexts into standalone files so they can be tested independently.
 
-State:
+**`builderReducer.ts`** — `EditorState`, `EditorAction`, `builderReducer(state, action)`
+
 ```typescript
 interface EditorState {
   template: Template;
   selectedFieldId: string | null;
-  isDirty: boolean;
+  hasUnsavedChanges: boolean;   // was isDirty in original plan
 }
 ```
 
-Actions:
-- `ADD_FIELD` — append + auto-select
-- `REMOVE_FIELD` — remove by id, clear selectedFieldId if matches
-- `UPDATE_FIELD` — replace field by id
-- `MOVE_FIELD` — reorder (from/to indices)
-- `SELECT_FIELD` — set selectedFieldId
-- `DUPLICATE_FIELD` — deep clone + new UUID via `generateId()` + clear `conditions` + insert after original + select clone
-- `UPDATE_SETTINGS` — merge TemplateSettings
-- `SET_TITLE` — update template.title
-- `MARK_SAVED` — set isDirty = false
+Actions: `ADD_FIELD`, `REMOVE_FIELD`, `UPDATE_FIELD`, `MOVE_FIELD`, `SELECT_FIELD`, `DUPLICATE_FIELD`, `UPDATE_SETTINGS`, `SET_TITLE`, `MARK_SAVED` — all use `BuilderActionType` enum from `src/enums`.
 
-Auto-persist: call `templateStore.saveTemplate()` on every mutating action.
+**`fillReducer.ts`** — `FillState`, `FillAction`, `fillReducer(state, action)`, `buildInitialState(template)`
 
-**`FillContext.tsx`**
-
-State:
 ```typescript
 interface FillState {
   template: Template;
-  instance: Instance;
   answers: Map<string, FieldValue>;
   visibilityMap: Map<string, FieldVisibilityState>;
   errors: Map<string, string>;
   submitted: boolean;
+  submitError: string | null;   // added — storage quota error on submit
 }
+
+type FillAction =
+  | { type: FillActionType.SET_ANSWER; payload: { fieldId: string; value: FieldValue } }
+  | { type: FillActionType.SET_ERRORS; payload: Map<string, string> }
+  | { type: FillActionType.SET_SUBMIT_ERROR; payload: string | null }  // added
+  | { type: FillActionType.MARK_SUBMITTED }
+  | { type: FillActionType.RESET }
+  | { type: FillActionType.LOAD_DRAFT; payload: Map<string, FieldValue> };
 ```
 
-Actions:
-- `SET_ANSWER` — update answers + re-run `evaluateAllFields()` + re-run all `calculationEngine` computations + auto-draft save if `autoSaveDraft`
-- `SUBMIT` — run `validateAll()`, set errors; if empty set submitted=true + `instanceStore.saveInstance()` + `instanceStore.clearDraft()`
-- `RESET` — clear answers/errors/submitted, new instance id, load fresh draft check
-- `LOAD_DRAFT` — load draft answers from `instanceStore.getDraft()`
+`SET_ANSWER` calls `recomputeState()` (from `src/utils/formState.ts`) — no inline evaluator calls in reducer.
 
 ---
 
-## B7. `src/hooks/` — 4 new files
+## B8. `src/contexts/` — 2 new files
 
-- **`useBuilder.ts`** — `useBuildContext()` shortcut; typed dispatch helpers: `addField(kind)`, `removeField(id)`, `updateField(config)`, `moveField(from, to)`, `selectField(id)`, `duplicateField(id)`, `updateSettings(partial)`, `setTitle(title)`
-- **`useFill.ts`** — `useFillContext()` shortcut; `setAnswer(fieldId, value)`, `submit()`, `reset()`, `loadDraft()`
+Thin wrappers around reducers from `src/state/`. Contexts own side effects (auto-save, submit logic) that belong outside the pure reducer.
+
+**`BuilderContext.tsx`**
+
+Wraps `builderReducer` from `src/state/builderReducer.ts`. Provides `{ state: EditorState, dispatch }`.
+
+Auto-persist side effect via `useEffect`: when `hasUnsavedChanges` is true, call `templateStore.saveTemplate()`. Strips `isDraft` flag on first real modification so template appears in the summary index.
+
+**`FillContext.tsx`**
+
+Wraps `fillReducer` from `src/state/fillReducer.ts`. Provides `{ state: FillState, dispatch, submit }`.
+
+`submit()` is a method on the context value (not a reducer action):
+1. Calls `validateAll()` — if errors, dispatches `SET_ERRORS` + returns
+2. Builds `Instance` from visible field answers with field snapshots
+3. Calls `instanceStore.saveInstance()` — on failure dispatches `SET_SUBMIT_ERROR` + returns
+4. Calls `instanceStore.clearDraft(templateId)`
+5. Dispatches `MARK_SUBMITTED`
+
+Auto-draft side effect via `useEffect`: when `autoSaveDraft` is enabled and not submitted, calls `instanceStore.saveDraft(templateId, answers)` on every answer change.
+
+---
+
+## B9. `src/hooks/` — 4 new files
+
+- **`useBuilder.ts`** — wraps `useBuildContext()`; returns `{ template, fields, selectedFieldId, selectedField, hasUnsavedChanges, dispatch, addField(kind), removeField(id), updateField(config), moveField(from, to), selectField(id), duplicateField(id) }`. `selectedField` computed via `useMemo`. Callers use `dispatch` directly for `UPDATE_SETTINGS` / `SET_TITLE`.
+- **`useFill.ts`** — wraps `useFillContext()`; returns `{ template, visibleFields, answers, visibilityMap, errors, submitted, submitError, completedCount, interactiveFieldCount, requiredTotal, setAnswer, getAnswer, isVisible, isRequired, getError, loadDraft, reset, submit }`. `visibleFields`, `completedCount`, `interactiveFieldCount`, `requiredTotal` all computed via `useMemo`.
 - **`useTemplateList.ts`** — reads `templateStore.listTemplates()` on mount; `templates`, `createTemplate()` (blank + navigate to `/builder/:id`), `deleteTemplate(id)`, `refresh()`
 - **`useStorage.ts`** — `useStorage<T>(key: string, defaultValue: T)` — reads JSON from localStorage; writes on set; handles parse errors + quota errors
 
 ---
 
-## B8. `src/components/builder/` — 7 new files
+## B10. `src/components/builder/` — 7 new files
 
 **`FieldList.tsx`**
 - `DndContext` + `SortableContext` from `@dnd-kit/sortable`
@@ -275,14 +335,14 @@ Actions:
 **`BuilderToolbar.tsx`**
 - Title `input-bare`: `onBlur`/`onKeyDown(Enter)` → `setTitle(value)`
 - Field count: `state.template.fields.length` (excludes section-headers)
-- Saved status: `isDirty ? 'unsaved changes' : 'saved HH:MM'`
+- Saved status: `hasUnsavedChanges ? 'unsaved changes' : 'saved HH:MM'`
 - Settings button → opens `TemplateSettingsModal`
 - Preview button → `navigate('/fill/${state.template.id}')`
 - Publish button → `templateStore.saveTemplate(state.template)` + `markSaved()`; blocks if `template.title` empty (inline error) or any select field has 0 options
 
 ---
 
-## B9. `src/components/fill/` — 4 new files
+## B11. `src/components/fill/` — 4 new files
 
 **`FormField.tsx`**
 - Looks up `getPlugin(field.kind)`
@@ -310,7 +370,7 @@ Actions:
 
 ---
 
-## B10. `src/components/print/PrintView.tsx`
+## B12. `src/components/print/PrintView.tsx`
 
 Print-only portal DOM (no topbar, no interaction):
 ```
@@ -332,7 +392,7 @@ Hidden fields excluded. Null `formatForPrint` → show "—".
 
 ---
 
-## B11. Wire pages to real data
+## B13. Wire pages to real data
 
 **`Home.tsx`** → replace stub array with `useTemplateList()`:
 - `templates` array from localStorage
@@ -365,7 +425,7 @@ Hidden fields excluded. Null `formatForPrint` → show "—".
 
 ## Verification
 1. `tsc --noEmit` — zero errors, zero `any`
-2. Create template with all 15 field types, save → reload → persists
+2. Create template with all 17 field types, save → reload → persists
 3. Conditional chain: Number(A) → hidden field(B, show if A>10) → required field(C, require if B visible); fill: verify correct behaviour
 4. Calculation: 3 number sources, fill values, real-time update; hide one source → excluded from calc
 5. Submit blocks on empty required; skips hidden required

@@ -1,0 +1,48 @@
+flowchart TB
+    User(["User (Browser)"])
+    Respondent(["Respondent (Browser)"])
+
+    subgraph Auth ["Auth Layer (Builder only)"]
+        Session["Email Session\n(no password)"]
+    end
+
+    subgraph Protected ["Protected Routes"]
+        Home["Home Page\nTemplate list & management"]
+
+        subgraph Builder ["Builder Mode"]
+            BUI["Field Canvas\nDrag · Add · Reorder"]
+            Config["Config Panel\nField settings & conditions"]
+            Preview["Preview Tab\n(new window)"]
+        end
+
+        Instances["Instances Page\nResponse history & CSV export"]
+    end
+
+    subgraph Public ["Public Routes (no auth)"]
+        subgraph Fill ["Fill Mode"]
+            Form["Form Renderer\nReal-time condition eval"]
+            Submit["Submit & Post-submit\nConfirmation screen"]
+            PDF["PDF Export\nwindow.print()"]
+        end
+    end
+
+    subgraph Persist ["Persistence (localStorage)"]
+        direction LR
+        Templates[("Templates\nfb:template:{id}")]
+        Instances2[("Submissions\nfb:instance:{id}")]
+        Drafts[("Drafts\nfb:draft:{templateId}")]
+    end
+
+    User --> Session
+    Session --> Home
+    Home --> Builder
+    Home --> Instances
+    Builder --> Templates
+    Builder --> Preview
+
+    Respondent --> Form
+    User --> Form
+    Form --> Submit
+    Submit --> Instances2
+    Form --> PDF
+    Fill --> Drafts

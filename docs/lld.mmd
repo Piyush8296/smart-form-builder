@@ -1,0 +1,57 @@
+flowchart TD
+    subgraph Routes ["pages/"]
+        HP["HomePage"]
+        BP["BuilderPage"]
+        FP["FillPage"]
+    end
+
+    subgraph Contexts ["contexts/"]
+        SC["SessionContext\nauth state + current user"]
+        BC["BuilderContext\nform template state"]
+        FC["FillContext\nanswers + visibility map"]
+    end
+
+    subgraph Hooks ["hooks/"]
+        UH["useHome\ntemplate list + CRUD"]
+        UB["useBuilder\nfield ops + conditions"]
+        UF["useFill\nSET_ANSWER pipeline"]
+    end
+
+    subgraph State ["state/  (pure reducers)"]
+        BR["builderReducer\nADD_FIELD · MOVE · DELETE\nUPDATE_CONFIG · ADD_CONDITION"]
+        FR["fillReducer\nSET_ANSWER → eval → calc"]
+    end
+
+    subgraph Logic ["logic/  (pure functions)"]
+        CE["conditionEvaluator\ntopological sort + eval"]
+        CA["calculationEngine\ncomputed field values"]
+        VA["validationEngine\nvisible fields only"]
+    end
+
+    subgraph Storage ["storage/  (localStorage adapters)"]
+        TS["templateStore"]
+        IS["instanceStore"]
+        AU["authStore · accessStore"]
+    end
+
+    subgraph Registry ["registry/  (field plugin system)"]
+        FP2["FieldPlugin × 17\ncreateDefault · ConfigEditor\nFieldRenderer · validate\nformatForPrint"]
+    end
+
+    subgraph Contracts ["types/ · enums/ · constants/"]
+        T["FieldConfig union\nFieldValue · Template\nInstance · Session"]
+    end
+
+    HP --> SC & UH & Storage
+    BP --> BC --> UB --> BR
+    FP --> FC --> UF --> FR
+
+    UF --> CE --> CA
+    CA --> VA
+
+    UB & UF --> Storage
+    BR & FR --> Registry
+    Registry --> Contracts
+    State --> Contracts
+    Logic --> Contracts
+    Storage --> Contracts

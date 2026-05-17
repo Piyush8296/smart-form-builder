@@ -2,7 +2,7 @@
 
 ## Quick Facts
 
-- **Stack**: React 19, TypeScript 5 (strict), Vite 6, Tailwind CSS v4
+- **Stack**: React 19, TypeScript 5 (strict), Vite 6, Tailwind CSS v4, React Router v7
 - **State**: React built-ins (useState/useReducer/Context) — no external state lib by default
 - **Testing**: Vitest 3 + React Testing Library + jsdom
 - **Build**: npm, Vite 6, TypeScript strict mode
@@ -36,7 +36,7 @@ npm run coverage     # Vitest coverage report
 | Files touched | Auto-loaded skill |
 |---------------|-------------------|
 | `src/components/**` | `react-patterns`, `frontend-design` |
-| `src/hooks/**`, `src/stores/**` | `state-management` |
+| `src/hooks/**`, `src/state/**` | `state-management` |
 | `**/*.test.*`, `**/*.spec.*` | `testing-strategy` |
 | `**/*.css`, `src/index.css` | `css-architecture` |
 | `src/pages/**`, routing files | `performance-optimization`, `seo-fundamentals` |
@@ -47,7 +47,9 @@ npm run coverage     # Vitest coverage report
 | Bug investigation | `systematic-debugging` |
 | Security concern | `security-audit` |
 | Design/mockup work | `design-intelligence` |
-| `src/lib/api/**`, `src/services/**` | `api-layer` |
+| `src/storage/**` | `state-management` |
+| `src/logic/**` | `systematic-debugging` |
+| `src/registry/**` | `react-patterns` |
 | Error boundaries, try/catch | `error-handling` |
 | Auth, login, middleware | `auth-patterns` |
 | `vite.config.ts`, build files | `monorepo-patterns` |

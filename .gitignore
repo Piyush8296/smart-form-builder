@@ -13,11 +13,6 @@ dist/
 *.log
 npm-debug.log*
 
-# Planning docs (local only)
-*-plan.md
-plan-*.md
-pr-review-feedback.md
-
 # Editor
 .DS_Store
 *.suo
